@@ -11,7 +11,6 @@
         <link rel="stylesheet" href="editor.css">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-        <script src="js/util_functions.js"></script>
         <script src="js/pureknob.js"></script>
         <script src="https://unpkg.com/wavesurfer.js"></script>
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.js"></script>
@@ -38,6 +37,7 @@
                 <button class="btn btn-success m-1" id="undo_get_selection_btn">Get Original Sample</button>
                 <button class="btn btn-success m-1" id="reset_filters">Reset Filters</button>
                 <button class="btn btn-success m-1" id="delete_region">Delete Region</button>
+                <button class="btn btn-success m-1" onclick="exportBufferToFile()">Export</button>
             </div>
             <div class="row p-1 justify-content-center">
                 <input type="range" min="1" max="200" value="0" id="slider" style="width: 60%"/>
@@ -98,26 +98,6 @@
                 </div>
             </div>
         </div>
-
-        <script>
-            var song = 'http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3'
-            var wavesurfer = createWavesurfer(song)
-
-            // Query Selectors
-            initQuerySelectors();
-
-            // Wavesurfer events
-            initWavesurferEvents();
-
-            // Knobs
-            var lowpass_knob = createKnob("lowpass_knob", 0, 500);
-            var highpass_knob = createKnob("highpass_knob", 0, 500);
-            var bandpass_knob = createKnob("bandpass_knob", 0, 500);
-            var lowshelf_knob = createKnob("lowshelf_knob", 0, 500);
-            var highshelf_knob = createKnob("highshelf_knob", 0, 500);
-            var peaking_knob = createKnob("peaking_knob", 0, 500);
-            var notch_knob = createKnob("notch_knob", 0, 500);
-            var allpass_knob = createKnob("allpass_knob", 0, 500);      
-        </script>
+        <script src="js/app.js"></script>
     </body>
 </html>

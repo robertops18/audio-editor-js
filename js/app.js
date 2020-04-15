@@ -1,3 +1,23 @@
+var song = 'http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3'
+var wavesurfer = createWavesurfer(song)
+
+// Query Selectors
+initQuerySelectors();
+
+// Wavesurfer events
+initWavesurferEvents();
+
+// Knobs
+var lowpass_knob = createKnob("lowpass_knob", 0, 500);
+var highpass_knob = createKnob("highpass_knob", 0, 500);
+var bandpass_knob = createKnob("bandpass_knob", 0, 500);
+var lowshelf_knob = createKnob("lowshelf_knob", 0, 500);
+var highshelf_knob = createKnob("highshelf_knob", 0, 500);
+var peaking_knob = createKnob("peaking_knob", 0, 500);
+var notch_knob = createKnob("notch_knob", 0, 500);
+var allpass_knob = createKnob("allpass_knob", 0, 500);    
+
+// Initialization functions 
 function initQuerySelectors() {
     document.querySelector('#slider').oninput = function () {
 		wavesurfer.zoom(Number(this.value));
@@ -84,10 +104,12 @@ function createWavesurfer(song) {
     return wavesurfer;
 }
 
+// Print aux function
 function print(s) {
     console.log(s);
 }
 
+// Buffer related functions
 function createBuffer(originalBuffer, duration) {
     var sampleRate = originalBuffer.sampleRate
     var frameCount = duration * sampleRate
@@ -107,6 +129,23 @@ function copyBuffer(fromBuffer, fromStart, fromEnd, toBuffer, toStart) {
     }
 }
 
+function concatBuffer(buffer1, buffer2) {
+	var context = new AudioContext();
+    var numberOfChannels = Math.min( buffer1.numberOfChannels, buffer2.numberOfChannels );
+    var tmp = context.createBuffer( numberOfChannels, (buffer1.length + buffer2.length), buffer1.sampleRate );
+    for (var i=0; i<numberOfChannels; i++) {
+      var channel = tmp.getChannelData(i);
+      channel.set( buffer1.getChannelData(i), 0);
+      channel.set( buffer2.getChannelData(i), buffer1.length);
+    }
+    return tmp;
+}
+
+function exportBufferToFile() {
+	
+}
+
+// Region related functions
 function getSelectedRegion() {
     var regionsList = wavesurfer.regions.list;
     for (var r in regionsList) {
@@ -143,34 +182,46 @@ function deleteRegion() {
 	var region = regionList[Object.keys(regionList)[0]]
 	
 	var startTime = region.start;
-	var endTime = region.end;
+    var endTime = region.end;
 
-	var totalDuration = wavesurfer.getDuration();
+    var totalDuration = wavesurfer.getDuration();
+    var firstBuffer;
+    var secondBuffer;
+    var finalBuffer;
 
-	var firstBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
-	copyBuffer(wavesurfer.backend.buffer, 0, startTime, firstBuffer, 0);
-
-	var secondBuffer = createBuffer(wavesurfer.backend.buffer, totalDuration - endTime);
-	copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, secondBuffer, 0);
-
-	var finalBuffer = concatBuffer(firstBuffer, secondBuffer);
-	wavesurfer.clearRegions();
+    wavesurfer.clearRegions();
 	wavesurfer.empty();
-	wavesurfer.loadDecodedBuffer(finalBuffer);
-}
-
-function concatBuffer(buffer1, buffer2) {
-	var context = new AudioContext();
-    var numberOfChannels = Math.min( buffer1.numberOfChannels, buffer2.numberOfChannels );
-    var tmp = context.createBuffer( numberOfChannels, (buffer1.length + buffer2.length), buffer1.sampleRate );
-    for (var i=0; i<numberOfChannels; i++) {
-      var channel = tmp.getChannelData(i);
-      channel.set( buffer1.getChannelData(i), 0);
-      channel.set( buffer2.getChannelData(i), buffer1.length);
+    // Case 1: All the sample is selected
+    if (startTime == 0 && endTime == totalDuration) {
+        wavesurfer.clearRegions();
+        wavesurfer.empty();
     }
-    return tmp;
+    // Case 2: Region is at the start of the sample
+    else if (startTime == 0) {
+        finalBuffer = createBuffer(wavesurfer.backend.buffer, totalDuration - endTime);
+        copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, finalBuffer, 0);
+        wavesurfer.loadDecodedBuffer(finalBuffer);
+    }
+    // Case 3: Region is at the end of the sample 
+    else if (endTime == totalDuration) {
+        finalBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
+        copyBuffer(wavesurfer.backend.buffer, 0, startTime, finalBuffer, 0);
+        wavesurfer.loadDecodedBuffer(finalBuffer);
+    }     
+    // Case 4: Region is in the middle
+    else {
+        firstBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
+        copyBuffer(wavesurfer.backend.buffer, 0, startTime, firstBuffer, 0);
+    
+        secondBuffer = createBuffer(wavesurfer.backend.buffer, totalDuration - endTime);
+        copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, secondBuffer, 0);
+    
+        finalBuffer = concatBuffer(firstBuffer, secondBuffer);
+        wavesurfer.loadDecodedBuffer(finalBuffer);
+    }
 }
 
+// Filter related functions
 function applyFilter(filterType, frequency) {
 	var filter = wavesurfer.backend.ac.createBiquadFilter();
 	filter.type = filterType;
@@ -197,28 +248,7 @@ function resetFilters() {
 	highshelf_knob.setValue(0);
 	peaking_knob.setValue(0);
 	notch_knob.setValue(0);
-	allpass_knob.setValue(0);
+    allpass_knob.setValue(0);
+    
+    applyFilter('allpass', 0);
 }
-
-/*
-function createGain() {
-	var gain = wavesurfer.backend.ac.createGain();
-	gain.connect(wavesurfer.backend.ac.destination);
-	return gain;
-}
-
-function amplify(value) {
-	gain.gain.value = value;
-}
-
-function createAmplifyKnob(divID) {
-	var myKnob = pureknob.createKnob(134, 134);
-	myKnob.setProperty('valMin', 0);
-	myKnob.setProperty('valMax', 2);
-	myKnob.setProperty('colorFG', '#4353FF');
-	var node = myKnob.node();
-	var elem = document.getElementById(divID);
-	elem.appendChild(node);
-	return myKnob;
-}
-*/
