@@ -1,0 +1,16 @@
+#slider {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.knob {
+    display: contents;
+}
+
+.col-sm {
+    display: contents;
+}
+
+.filter-buttons { 
+    width: 134px;
+}

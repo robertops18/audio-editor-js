@@ -1,0 +1,123 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+
+        <title>Freesound Editor</title>
+        <meta name="description" content="Freesound editor">
+        <meta name="author" content="Roberto Pérez">
+
+        <link rel="stylesheet" href="editor.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+        <script src="js/util_functions.js"></script>
+        <script src="js/pureknob.js"></script>
+        <script src="https://unpkg.com/wavesurfer.js"></script>
+        <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.js"></script>
+        <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.cursor.js"></script>
+
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    </head>
+
+    <body>
+        <div id="waveform"></div>
+        <div class="container">
+            <div class="row p-1">
+                <button type="button" class="btn btn-primary m-1" onclick="wavesurfer.playPause()">
+                    <i class="glyphicon glyphicon-play"></i>
+                    Play
+                    /
+                    <i class="glyphicon glyphicon-pause"></i>
+                    Pause
+                </button>
+            </div>
+            <div class="row p-1">
+                <button class="btn btn-success m-1" id="get_selection_btn">Get Selected Region</button>
+                <button class="btn btn-success m-1" id="undo_get_selection_btn">Get Original Sample</button>
+                <button class="btn btn-success m-1" id="reset_filters">Reset Filters</button>
+                <button class="btn btn-success m-1" id="delete_region">Delete Region</button>
+            </div>
+            <div class="row p-1">
+                <input type="range" min="1" max="200" value="0" id="slider" style="width: 60%"/>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm">
+                    <div class="m-1" id="lowpass_knob"></div>
+                </div>
+                <div class="col-sm">
+                    <div class="m-1" id="highpass_knob"></div>
+                </div>
+                <div class="col-sm">
+                    <div class="m-1" id="bandpass_knob"></div>
+                </div>
+                <div class="col-sm">
+                    <div class="m-1" id="lowshelf_knob"></div>
+                </div>
+                <div class="col-sm">
+                    <div class="m-1" id="highshelf_knob"></div>
+                </div>
+                <div class="col-sm">
+                    <div class="m-1" id="peaking_knob"></div>
+                </div>
+                <div class="col-sm">
+                    <div class="m-1" id="notch_knob"></div>
+                </div>
+                <div class="col-sm">
+                    <div class="m-1" id="allpass_knob"></div>
+                </div>
+
+                <div class="w-100"></div>
+
+                <div class="col-sm">
+                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowpass_filter_btn">Apply Lowpass filter</button>
+                </div>
+                <div class="col-sm">
+                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="highpass_filter_btn">Apply Highpass filter</button>
+                </div>
+                <div class="col-sm">
+                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="bandpass_filter_btn">Apply Bandpass filter</button>
+                </div>
+                <div class="col-sm">
+                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowshelf_filter_btn">Apply Lowshelf filter</button>
+                </div>
+                <div class="col-sm">
+                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="highshelf_filter_btn">Apply Highshelf filter</button>
+                </div>
+                <div class="col-sm">
+                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="peaking_filter_btn">Apply Peaking filter</button>
+                </div>
+                <div class="col-sm">
+                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="notch_filter_btn">Apply Notch filter</button>
+                </div>
+                <div class="col-sm">
+                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="allpass_filter_btn">Apply Allpass filter</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            var song = 'http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3'
+            var wavesurfer = createWavesurfer(song)
+
+            // Query Selectors
+            initQuerySelectors();
+
+            // Wavesurfer events
+            initWavesurferEvents();
+
+            // Knobs
+            var lowpass_knob = createKnob("lowpass_knob", 0, 500);
+            var highpass_knob = createKnob("highpass_knob", 0, 500);
+            var bandpass_knob = createKnob("bandpass_knob", 0, 500);
+            var lowshelf_knob = createKnob("lowshelf_knob", 0, 500);
+            var highshelf_knob = createKnob("highshelf_knob", 0, 500);
+            var peaking_knob = createKnob("peaking_knob", 0, 500);
+            var notch_knob = createKnob("notch_knob", 0, 500);
+            var allpass_knob = createKnob("allpass_knob", 0, 500);      
+        </script>
+    </body>
+</html>
