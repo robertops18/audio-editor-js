@@ -24,7 +24,7 @@
     <body>
         <div id="waveform"></div>
         <div class="container">
-            <div class="row p-1">
+            <div class="row p-1 justify-content-center">
                 <button type="button" class="btn btn-primary m-1" onclick="wavesurfer.playPause()">
                     <i class="glyphicon glyphicon-play"></i>
                     Play
@@ -33,13 +33,13 @@
                     Pause
                 </button>
             </div>
-            <div class="row p-1">
+            <div class="row p-1 justify-content-center">
                 <button class="btn btn-success m-1" id="get_selection_btn">Get Selected Region</button>
                 <button class="btn btn-success m-1" id="undo_get_selection_btn">Get Original Sample</button>
                 <button class="btn btn-success m-1" id="reset_filters">Reset Filters</button>
                 <button class="btn btn-success m-1" id="delete_region">Delete Region</button>
             </div>
-            <div class="row p-1">
+            <div class="row p-1 justify-content-center">
                 <input type="range" min="1" max="200" value="0" id="slider" style="width: 60%"/>
             </div>
         </div>
