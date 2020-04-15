@@ -33,6 +33,9 @@ function initQuerySelectors() {
 	}
 	document.querySelector('#delete_region').onclick = function () {
 		deleteRegion();
+    }
+    document.querySelector('#select_all_btn').onclick = function () {
+		selectAllSample();
 	}
 	
 	document.querySelector('#lowpass_filter_btn').onclick = function () {
@@ -169,6 +172,13 @@ function undoGetSelectedRegion(song) {
 	wavesurfer.load(song);
 }
 
+function selectAllSample() {
+    wavesurfer.addRegion({
+        start: 0,
+        end: wavesurfer.getDuration()
+    });
+}
+
 function deletePreviousRegion() {
     var regionList = wavesurfer.regions.list;
     if (Object.keys(regionList).length > 0) {
@@ -189,24 +199,23 @@ function deleteRegion() {
     var secondBuffer;
     var finalBuffer;
 
-    wavesurfer.clearRegions();
-	wavesurfer.empty();
     // Case 1: All the sample is selected
     if (startTime == 0 && endTime == totalDuration) {
-        wavesurfer.clearRegions();
-        wavesurfer.empty();
+        resetAndLoadNewBuffer();
     }
     // Case 2: Region is at the start of the sample
     else if (startTime == 0) {
         finalBuffer = createBuffer(wavesurfer.backend.buffer, totalDuration - endTime);
         copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, finalBuffer, 0);
-        wavesurfer.loadDecodedBuffer(finalBuffer);
+
+        resetAndLoadNewBuffer(finalBuffer);
     }
     // Case 3: Region is at the end of the sample 
     else if (endTime == totalDuration) {
         finalBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
         copyBuffer(wavesurfer.backend.buffer, 0, startTime, finalBuffer, 0);
-        wavesurfer.loadDecodedBuffer(finalBuffer);
+
+        resetAndLoadNewBuffer(finalBuffer);
     }     
     // Case 4: Region is in the middle
     else {
@@ -217,7 +226,19 @@ function deleteRegion() {
         copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, secondBuffer, 0);
     
         finalBuffer = concatBuffer(firstBuffer, secondBuffer);
+
+        resetAndLoadNewBuffer(finalBuffer);
+    }
+}
+
+function resetAndLoadNewBuffer(finalBuffer = null) {
+    wavesurfer.clearRegions();
+    wavesurfer.empty();
+    if (finalBuffer) {
         wavesurfer.loadDecodedBuffer(finalBuffer);
+    } else {
+        var emptyBuffer = createBuffer(wavesurfer.backend.buffer, wavesurfer.getDuration());
+        wavesurfer.loadDecodedBuffer(emptyBuffer);
     }
 }
 
