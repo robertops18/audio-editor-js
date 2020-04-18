@@ -37,11 +37,18 @@ function initQuerySelectors() {
 	document.querySelector('#delete_region').onclick = function () {
 		deleteRegion();
     }
+    document.querySelector('#empty_region').onclick = function () {
+		emptyRegion();
+    }
     document.querySelector('#select_all_btn').onclick = function () {
 		selectAllSample();
 	}
-	
-	document.querySelector('#lowpass_filter_btn').onclick = function () {
+    
+    querySelectorFilters();
+}
+
+function querySelectorFilters() {
+    document.querySelector('#lowpass_filter_btn').onclick = function () {
 		applyFilter('lowpass', lowpass_knob.getValue());
 	}
 	document.querySelector('#highpass_filter_btn').onclick = function () {
@@ -65,7 +72,6 @@ function initQuerySelectors() {
 	document.querySelector('#allpass_filter_btn').onclick = function () {
 		applyFilter('allpass', allpass_knob.getValue());
 	}
-	
 }
 
 function initWavesurferEvents() {
@@ -242,6 +248,62 @@ function resetAndLoadNewBuffer(finalBuffer = null) {
     } else {
         var emptyBuffer = createBuffer(wavesurfer.backend.buffer, wavesurfer.getDuration());
         wavesurfer.loadDecodedBuffer(emptyBuffer);
+    }
+}
+
+function emptyRegion() {//
+    var regionList = wavesurfer.regions.list;
+	var region = regionList[Object.keys(regionList)[0]]
+	
+	var startTime = region.start;
+    var endTime = region.end;
+
+    var totalDuration = wavesurfer.getDuration();
+    var firstBuffer;
+    var secondBuffer;
+    var emptyBuffer;
+    var finalBuffer;
+
+    // Case 1: All the sample is selected
+    if (startTime == 0 && endTime == totalDuration) {
+        resetAndLoadNewBuffer();
+    }
+    // Case 2: Region is at the start of the sample
+    else if (startTime == 0) {
+        emptyBuffer = createBuffer(wavesurfer.backend.buffer, endTime);
+        
+        secondBuffer = createBuffer(wavesurfer.backend.buffer, totalDuration - endTime);
+        copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, secondBuffer, 0);
+
+        finalBuffer = concatBuffer(emptyBuffer, secondBuffer);
+
+        resetAndLoadNewBuffer(finalBuffer);
+    }
+    // Case 3: Region is at the end of the sample 
+    else if (endTime == totalDuration) {
+        firstBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
+        copyBuffer(wavesurfer.backend.buffer, 0, startTime, firstBuffer, 0);
+
+        emptyBuffer = createBuffer(wavesurfer.backend.buffer, endTime - startTime);
+
+        finalBuffer = concatBuffer(firstBuffer, emptyBuffer);
+
+        resetAndLoadNewBuffer(finalBuffer);
+    }     
+    // Case 4: Region is in the middle
+    else {
+        firstBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
+        copyBuffer(wavesurfer.backend.buffer, 0, startTime, firstBuffer, 0);
+
+        emptyBuffer = createBuffer(wavesurfer.backend.buffer, endTime-startTime);
+    
+        secondBuffer = createBuffer(wavesurfer.backend.buffer, totalDuration - endTime);
+        copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, secondBuffer, 0);
+    
+        var auxBuffer = concatBuffer(firstBuffer, emptyBuffer);
+        finalBuffer = concatBuffer(auxBuffer, secondBuffer);
+
+        resetAndLoadNewBuffer(finalBuffer);
     }
 }
 

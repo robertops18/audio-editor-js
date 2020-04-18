@@ -10,6 +10,7 @@
 
         <link rel="stylesheet" href="editor.css">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
         <script src="js/pureknob.js"></script>
         <script src="https://unpkg.com/wavesurfer.js"></script>
@@ -25,10 +26,10 @@
         <div class="container">
             <div class="row p-1 justify-content-center">
                 <button type="button" class="btn btn-primary m-1" onclick="wavesurfer.playPause()">
-                    <i class="glyphicon glyphicon-play"></i>
+                    <i class="fas fa-play fa-xs"></i>
                     Play
                     /
-                    <i class="glyphicon glyphicon-pause"></i>
+                    <i class="fas fa-pause fa-xs"></i>
                     Pause
                 </button>
             </div>
@@ -38,6 +39,7 @@
                 <button class="btn btn-success m-1" id="undo_get_selection_btn">Get Original Sample</button>
                 <button class="btn btn-success m-1" id="reset_filters">Reset Filters</button>
                 <button class="btn btn-success m-1" id="delete_region">Delete Region</button>
+                <button class="btn btn-success m-1" id="empty_region">Empty Region</button>
                 <button class="btn btn-success m-1" onclick="exportBufferToFile()">Export</button>
             </div>
             <div class="row p-1 justify-content-center">
