@@ -1,6 +1,9 @@
 var song = 'http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3'
 var wavesurfer = createWavesurfer(song)
 
+var AudioContext = window.AudioContext          // Default
+              || window.webkitAudioContext;  // Safari and old versions of Chrome
+
 // Query Selectors
 initQuerySelectors();
 
