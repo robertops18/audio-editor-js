@@ -77,7 +77,8 @@ function querySelectorFilters() {
 function initWavesurferEvents() {
     // Reset region when clicking the waveform
 	wavesurfer.on('seek', function(region) {
-		wavesurfer.clearRegions();
+        wavesurfer.clearRegions();
+        changeRegionButtonsStatus(true);
 	});
 
 	// Delete previous region when creating a new one
@@ -189,6 +190,7 @@ function selectAllSample() {
 }
 
 function deletePreviousRegion() {
+    changeRegionButtonsStatus(false);
     var regionList = wavesurfer.regions.list;
     if (Object.keys(regionList).length > 0) {
         var firstRegionID = Object.keys(regionList)[0];
@@ -305,6 +307,12 @@ function emptyRegion() {//
 
         resetAndLoadNewBuffer(finalBuffer);
     }
+}
+
+function changeRegionButtonsStatus(status) {
+    document.querySelector('#delete_region').disabled = status;
+    document.querySelector('#empty_region').disabled = status;
+    document.querySelector('#get_selection_btn').disabled = status;
 }
 
 // Filter related functions
