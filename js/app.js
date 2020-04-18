@@ -78,7 +78,8 @@ function initWavesurferEvents() {
     // Reset region when clicking the waveform
 	wavesurfer.on('seek', function(region) {
         wavesurfer.clearRegions();
-        changeRegionButtonsStatus(true);
+        setDisabled
+(true);
 	});
 
 	// Delete previous region when creating a new one
@@ -175,11 +176,14 @@ function getSelectedRegion() {
         wavesurfer.loadDecodedBuffer(buffer)
     }
     wavesurfer.clearRegions();
+    setDisabled(true);
 }
 
 function undoGetSelectedRegion(song) {
+    wavesurfer.clearRegions();
     wavesurfer.empty()
-	wavesurfer.load(song);
+    wavesurfer.load(song);
+    setDisabled(true);
 }
 
 function selectAllSample() {
@@ -187,10 +191,11 @@ function selectAllSample() {
         start: 0,
         end: wavesurfer.getDuration()
     });
+    setDisabled(false);
 }
 
 function deletePreviousRegion() {
-    changeRegionButtonsStatus(false);
+    setDisabled(false);
     var regionList = wavesurfer.regions.list;
     if (Object.keys(regionList).length > 0) {
         var firstRegionID = Object.keys(regionList)[0];
@@ -199,6 +204,7 @@ function deletePreviousRegion() {
 }
 
 function deleteRegion() {
+    setDisabled(true);
 	var regionList = wavesurfer.regions.list;
 	var region = regionList[Object.keys(regionList)[0]]
 	
@@ -253,7 +259,8 @@ function resetAndLoadNewBuffer(finalBuffer = null) {
     }
 }
 
-function emptyRegion() {//
+function emptyRegion() {
+    setDisabled(true);
     var regionList = wavesurfer.regions.list;
 	var region = regionList[Object.keys(regionList)[0]]
 	
@@ -309,7 +316,7 @@ function emptyRegion() {//
     }
 }
 
-function changeRegionButtonsStatus(status) {
+function setDisabled(status) {
     document.querySelector('#delete_region').disabled = status;
     document.querySelector('#empty_region').disabled = status;
     document.querySelector('#get_selection_btn').disabled = status;
