@@ -46,75 +46,102 @@
                 <button class="btn btn-success m-1" onclick="exportBufferToFile()">Export</button>
             </div>
             <div class="row p-1 justify-content-center">
+                <i class="fas fa-search-minus mr-2"></i>
                 <input type="range" min="1" max="200" value="0" id="slider" style="width: 60%"/>
+                <i class="fas fa-search-plus ml-2"></i>
             </div>
         </div>
-        <div class="container">
-            <div class="row">
-                <div class="col-sm">
-                    <div class="m-1" id="lowpass_knob"></div>
+        <div id="accordion">
+            <div class="card m-2">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0" class="btn btn-link" data-toggle="collapse" data-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
+                        Filters
+                        <i class="fas fa-caret-down"></i>
+                    </h5>
                 </div>
-                <div class="col-sm">
-                    <div class="m-1" id="highpass_knob"></div>
-                </div>
-                <div class="col-sm">
-                    <div class="m-1" id="bandpass_knob"></div>
-                </div>
-                <div class="col-sm">
-                    <div class="m-1" id="lowshelf_knob"></div>
-                </div>
-                <div class="col-sm">
-                    <div class="m-1" id="highshelf_knob"></div>
-                </div>
-                <div class="col-sm">
-                    <div class="m-1" id="peaking_knob"></div>
-                </div>
-                <div class="col-sm">
-                    <div class="m-1" id="notch_knob"></div>
-                </div>
-                <div class="col-sm">
-                    <div class="m-1" id="allpass_knob"></div>
-                </div>
-
-                <div class="w-100"></div>
-
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowpass_filter_btn">Apply Lowpass filter</button>
-                </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="highpass_filter_btn">Apply Highpass filter</button>
-                </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="bandpass_filter_btn">Apply Bandpass filter</button>
-                </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowshelf_filter_btn">Apply Lowshelf filter</button>
-                </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="highshelf_filter_btn">Apply Highshelf filter</button>
-                </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="peaking_filter_btn">Apply Peaking filter</button>
-                </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="notch_filter_btn">Apply Notch filter</button>
-                </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="allpass_filter_btn">Apply Allpass filter</button>
+                <div id="collapseFilters" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm">
+                                <div class="m-1" id="lowpass_knob"></div>
+                            </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="highpass_knob"></div>
+                            </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="bandpass_knob"></div>
+                            </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="lowshelf_knob"></div>
+                            </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="highshelf_knob"></div>
+                            </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="peaking_knob"></div>
+                            </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="notch_knob"></div>
+                            </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="allpass_knob"></div>
+                            </div>
+            
+                            <div class="w-100"></div>
+            
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowpass_filter_btn">Apply Lowpass filter</button>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="highpass_filter_btn">Apply Highpass filter</button>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="bandpass_filter_btn">Apply Bandpass filter</button>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowshelf_filter_btn">Apply Lowshelf filter</button>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="highshelf_filter_btn">Apply Highshelf filter</button>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="peaking_filter_btn">Apply Peaking filter</button>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="notch_filter_btn">Apply Notch filter</button>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="allpass_filter_btn">Apply Allpass filter</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-sm">
-                    <div class="m-1" id="amplify_knob"></div>
+            <div class="card m-2">
+                <div class="card-header" id="headingTwo">
+                    <h5 class="mb-0" data-toggle="collapse" data-target="#collapseEffects" aria-expanded="true" aria-controls="collapseEffects">
+                        Effects
+                        <i class="fas fa-caret-down"></i>
+                    </h5>
                 </div>
-
-                <div class="w-100"></div>
-
-                <div class="col-sm">
-                    <button class="btn btn-primary btn-sm filter-buttons m-1" id="amplify_btn">Amplify</button>
+                <div id="collapseEffects" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm">
+                                <div class="m-1" id="amplify_knob"></div>
+                            </div>
+            
+                            <div class="w-100"></div>
+            
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="amplify_btn">Amplify</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        
         <script src="js/app.js"></script>
     </body>
 </html>
