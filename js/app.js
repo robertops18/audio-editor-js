@@ -42,6 +42,9 @@ function initQuerySelectors() {
     }
     document.querySelector('#select_all_btn').onclick = function () {
 		selectAllSample();
+    }
+    document.querySelector('#reverse').onclick = function () {
+		reverse();
 	}
     
     querySelectorFilters();
@@ -157,6 +160,13 @@ function concatBuffer(buffer1, buffer2) {
 
 function exportBufferToFile() {
 	
+}
+
+function reverse() {
+    var buffer = wavesurfer.backend.buffer;
+    Array.prototype.reverse.call( buffer.getChannelData(0) );
+    wavesurfer.empty();
+    wavesurfer.loadDecodedBuffer(buffer);
 }
 
 // Region related functions
