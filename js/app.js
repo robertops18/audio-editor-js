@@ -18,7 +18,9 @@ var lowshelf_knob = createKnob("lowshelf_knob", 0, 500);
 var highshelf_knob = createKnob("highshelf_knob", 0, 500);
 var peaking_knob = createKnob("peaking_knob", 0, 500);
 var notch_knob = createKnob("notch_knob", 0, 500);
-var allpass_knob = createKnob("allpass_knob", 0, 500);    
+var allpass_knob = createKnob("allpass_knob", 0, 500);
+
+var amplify_knob = createKnob("amplify_knob", 1, 5, 1);
 
 // Initialization functions 
 function initQuerySelectors() {
@@ -45,6 +47,15 @@ function initQuerySelectors() {
     }
     document.querySelector('#reverse').onclick = function () {
 		reverse();
+    }
+    document.querySelector('#fade_in').onclick = function () {
+		linearFade('in');
+    }
+    document.querySelector('#fade_out').onclick = function () {
+		linearFade('out');
+    }
+    document.querySelector('#amplify_btn').onclick = function () {
+		amplify(amplify_knob.getValue());
 	}
     
     querySelectorFilters();
@@ -162,11 +173,29 @@ function exportBufferToFile() {
 	
 }
 
+function linearFade(type) {
+    if (type == 'in') {
+        wavesurfer.backend.gainNode.gain.exponentialRampToValueAtTime(1.0, wavesurfer.getCurrentTime() + 2);
+    } else if (type == 'out') {
+        wavesurfer.backend.gainNode.gain.exponentialRampToValueAtTime(0.01, wavesurfer.getCurrentTime() + 2);
+        print(wavesurfer);
+    } else {
+        print('Incorrect value (in or out)')
+    }
+}
+
 function reverse() {
     var buffer = wavesurfer.backend.buffer;
     Array.prototype.reverse.call( buffer.getChannelData(0) );
     wavesurfer.empty();
     wavesurfer.loadDecodedBuffer(buffer);
+}
+
+function amplify(value) {
+    wavesurfer.backend.gainNode.gain.value = value;
+    wavesurfer.params.barHeight = value;
+    wavesurfer.empty();
+    wavesurfer.loadDecodedBuffer(wavesurfer.backend.buffer);
 }
 
 // Region related functions
@@ -340,11 +369,12 @@ function applyFilter(filterType, frequency) {
 	wavesurfer.backend.setFilter(filter);
 }
 
-function createKnob(divID, valMin, valMax) {
+function createKnob(divID, valMin, valMax, defaultValue = 0) {
 	var myKnob = pureknob.createKnob(134, 134);
 	myKnob.setProperty('valMin', valMin);
 	myKnob.setProperty('valMax', valMax);
-	myKnob.setProperty('colorFG', '#4353FF');
+    myKnob.setProperty('colorFG', '#4353FF');
+    myKnob.setProperty('val', defaultValue);
 	var node = myKnob.node();
 	var elem = document.getElementById(divID);
 	elem.appendChild(node);
@@ -360,6 +390,8 @@ function resetFilters() {
 	peaking_knob.setValue(0);
 	notch_knob.setValue(0);
     allpass_knob.setValue(0);
+
+    amplify_knob.setValue(1);
     
     applyFilter('allpass', 0);
 }
