@@ -92,8 +92,7 @@ function initWavesurferEvents() {
     // Reset region when clicking the waveform
 	wavesurfer.on('seek', function(region) {
         wavesurfer.clearRegions();
-        setDisabled
-(true);
+        setDisabled(true);
 	});
 
 	// Delete previous region when creating a new one
