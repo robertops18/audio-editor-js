@@ -49,10 +49,10 @@ function initQuerySelectors() {
 		reverse();
     }
     document.querySelector('#fade_in').onclick = function () {
-		linearFade('in');
+		fade('in');
     }
     document.querySelector('#fade_out').onclick = function () {
-		linearFade('out');
+		fade('out');
     }
     document.querySelector('#amplify_btn').onclick = function () {
 		amplify(amplify_knob.getValue());
@@ -173,7 +173,7 @@ function exportBufferToFile() {
 	
 }
 
-function linearFade(type) {
+function fade(type) {
     if (type == 'in') {
         wavesurfer.backend.gainNode.gain.exponentialRampToValueAtTime(1.0, wavesurfer.getCurrentTime() + 2);
     } else if (type == 'out') {
@@ -394,4 +394,5 @@ function resetFilters() {
     amplify_knob.setValue(1);
     
     applyFilter('allpass', 0);
+    amplify(1);
 }
