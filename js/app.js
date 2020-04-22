@@ -194,8 +194,8 @@ function writeUTFBytes(view, offset, string) {
     }
 }
 
-function encodeWAV(samples){
-    var channelData = samples.getChannelData(0);
+function encodeWAV(originalBuffer){
+    var channelData = originalBuffer.getChannelData(0);
     var buffer = new ArrayBuffer(44 + channelData.length * 2);
     var view = new DataView(buffer);
     var sampleRate = samples.sampleRate / 2;
