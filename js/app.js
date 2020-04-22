@@ -198,7 +198,7 @@ function encodeWAV(originalBuffer){
     var channelData = originalBuffer.getChannelData(0);
     var buffer = new ArrayBuffer(44 + channelData.length * 2);
     var view = new DataView(buffer);
-    var sampleRate = samples.sampleRate / 2;
+    var sampleRate = originalBuffer.sampleRate / 2;
   
     // RIFF chunk descriptor
     writeUTFBytes(view, 0, 'RIFF');
