@@ -51,8 +51,6 @@
                         <button class="btn btn-success m-1" id="undo_get_selection_btn">Get Original Sample</button>
                         <button class="btn btn-success m-1" id="reset_filters">Reset Filters</button>
                         <button class="btn btn-success m-1" id="reverse">Reverse</button>
-                        <button class="btn btn-success m-1" id="fade_in">Fade in</button>
-                        <button class="btn btn-success m-1" id="fade_out">Fade out</button>
                         <button class="btn btn-success m-1" onclick="exportBufferToFile()">Export</button>
                     </div>
                     <div class="row p-1 justify-content-center">
@@ -144,12 +142,25 @@
                             <div class="col-sm">
                                 <div class="m-1" id="amplify_knob"></div>
                             </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="fade_in_knob"></div>
+                            </div>
+                            <div class="col-sm">
+                                <div class="m-1" id="fade_out_knob"></div>
+                            </div>
             
                             <div class="w-100"></div>
             
                             <div class="col-sm">
                                 <button class="btn btn-primary btn-sm filter-buttons m-1" id="amplify_btn">Amplify</button>
                             </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="fade_in">Fade in</button>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="fade_out">Fade out</button>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
