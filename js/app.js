@@ -59,7 +59,10 @@ function initQuerySelectors() {
     }
     document.querySelector('#amplify_btn').onclick = function () {
 		amplify(amplify_knob.getValue());
-	}
+    }
+    document.querySelector('#export').onclick = function () {
+		exportBufferToFile();
+    }
     
     querySelectorFilters();
 }
@@ -172,8 +175,63 @@ function concatBuffer(buffer1, buffer2) {
 }
 
 function exportBufferToFile() {
-	
+    var blob = encodeWAV(wavesurfer.backend.buffer);
+
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+    a.href = url;
+    a.download = "sample.wav";
+    a.click();
+    window.URL.revokeObjectURL(url);
 }
+
+
+function writeUTFBytes(view, offset, string) {
+    for (var i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+    }
+}
+
+function encodeWAV(samples){
+    var channelData = samples.getChannelData(0);
+    var buffer = new ArrayBuffer(44 + channelData.length * 2);
+    var view = new DataView(buffer);
+    var sampleRate = samples.sampleRate / 2;
+  
+    // RIFF chunk descriptor
+    writeUTFBytes(view, 0, 'RIFF');
+    view.setUint32(4, 44 + channelData.length * 2, true);
+    writeUTFBytes(view, 8, 'WAVE');
+
+    // FMT sub-chunk
+    writeUTFBytes(view, 12, 'fmt ');
+    view.setUint32(16, 16, true); // chunkSize
+    view.setUint16(20, 1, true); // wFormatTag
+    view.setUint16(22, 2, true); // wChannels: stereo (2 channels)
+    view.setUint32(24, sampleRate, true); // dwSamplesPerSec
+    view.setUint32(28, sampleRate * 4, true); // dwAvgBytesPerSec
+    view.setUint16(32, 4, true); // wBlockAlign
+    view.setUint16(34, 16, true); // wBitsPerSample
+
+    // data sub-chunk
+    writeUTFBytes(view, 36, 'data');
+    view.setUint32(40, channelData.length * 2, true);
+
+    // write the PCM samples
+    var index = 44;
+    var volume = 1;
+    for (var i = 0; i < channelData.length; i++) {
+        view.setInt16(index, channelData[i] * (0x7FFF * volume), true);
+        index += 2;
+    }
+
+    // our final blob
+    var blob = new Blob([view], { type: 'audio/wav' });
+  
+    return blob;
+  }
 
 function fadeIn(duration) {
     var gainNode = wavesurfer.backend.gainNode;
