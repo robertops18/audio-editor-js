@@ -1,4 +1,5 @@
-var song = 'http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3'
+//var song = 'http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3'
+var song = './../audio/bejo-fiestaenlaterraza.mp3'
 var wavesurfer = createWavesurfer(song)
 
 var AudioContext = window.AudioContext          // Default
@@ -62,6 +63,9 @@ function initQuerySelectors() {
     }
     document.querySelector('#export').onclick = function () {
 		exportBufferToFile();
+    }
+    document.querySelector('#get_bpm').onclick = function () {
+		getBPM();
     }
     
     querySelectorFilters();
@@ -466,3 +470,84 @@ function resetFilters() {
     applyFilter('allpass', 0);
     amplify(1);
 }
+
+// Tempo
+
+function getBPM() {
+    var peaks = getPeaks(wavesurfer.backend.buffer.getChannelData(0));
+    var groups = getIntervals(peaks);
+    var top = groups.sort(function(intA, intB) {
+        return intB.count - intA.count;
+    }).splice(0, 5);
+
+    var bpm = Math.round(top[0].tempo);
+    return bpm;
+}
+
+function getPeaks(data) {
+    var partSize = 22050,
+        parts = data.length / partSize,
+        peaks = [];
+  
+    for (var i = 0; i < parts; i++) {
+      var max = 0;
+      for (var j = i * partSize; j < (i + 1) * partSize; j++) {
+        var volume = Math.abs(data[j]);
+        if (!max || (volume > max.volume)) {
+          max = {
+            position: j,
+            volume: volume
+          };
+        }
+      }
+      peaks.push(max);
+    }
+  
+    // We then sort the peaks according to volume...
+  
+    peaks.sort(function(a, b) {
+      return b.volume - a.volume;
+    });
+  
+    // ...take the loundest half of those...
+  
+    peaks = peaks.splice(0, peaks.length * 0.5);
+  
+    // ...and re-sort it back based on position.
+  
+    peaks.sort(function(a, b) {
+      return a.position - b.position;
+    });
+  
+    return peaks;
+}
+
+function getIntervals(peaks) {
+    var groups = [];
+  
+    peaks.forEach(function(peak, index) {
+      for (var i = 1; (index + i) < peaks.length && i < 10; i++) {
+        var group = {
+          tempo: (60 * 44100) / (peaks[index + i].position - peak.position),
+          count: 1
+        };
+  
+        while (group.tempo < 90) {
+          group.tempo *= 2;
+        }
+  
+        while (group.tempo > 180) {
+          group.tempo /= 2;
+        }
+  
+        group.tempo = Math.round(group.tempo);
+  
+        if (!(groups.some(function(interval) {
+          return (interval.tempo === group.tempo ? interval.count++ : 0);
+        }))) {
+          groups.push(group);
+        }
+      }
+    });
+    return groups;
+  }
