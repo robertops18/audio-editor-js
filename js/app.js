@@ -253,6 +253,9 @@ function fadeOut(duration) {
 function reverse() {
     var buffer = wavesurfer.backend.buffer;
     Array.prototype.reverse.call( buffer.getChannelData(0) );
+    if (buffer.numberOfChannels > 1) {
+        Array.prototype.reverse.call( buffer.getChannelData(1) );
+    }
     wavesurfer.empty();
     wavesurfer.loadDecodedBuffer(buffer);
 }
