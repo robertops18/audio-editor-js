@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
         <script src="js/pureknob.js"></script>
+        <script src="js/tone.js"></script>
 
         <script src="https://unpkg.com/wavesurfer.js"></script>
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.js"></script>
@@ -26,7 +27,7 @@
         <div id="waveform"></div>
         <div class="container">
             <div class="row p-1 justify-content-center">
-                <button type="button" class="btn btn-primary m-1" onclick="wavesurfer.playPause()">
+                <button type="button" class="btn btn-primary m-1" id="play_btn">
                     <i class="fas fa-play fa-xs"></i>
                     Play
                     /

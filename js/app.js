@@ -29,43 +29,44 @@ var fade_out_knob = createKnob("fade_out_knob", 1, 10, 1);
 // Initialization functions 
 function initQuerySelectors() {
     document.querySelector('#slider').oninput = function () {
-		wavesurfer.zoom(Number(this.value));
-	};
-	document.querySelector('#get_selection_btn').onclick = function () {
-		getSelectedRegion();
-	}
-	document.querySelector('#undo_get_selection_btn').onclick = function () {
-		undoGetSelectedRegion(song);
-	}
-	document.querySelector('#reset_filters').onclick = function () {
-		resetFilters();
-	}
-	document.querySelector('#delete_region').onclick = function () {
-		deleteRegion();
+		  wavesurfer.zoom(Number(this.value));
+    }
+    document.querySelector('#get_selection_btn').onclick = function () {
+      getSelectedRegion();
+    }
+    document.querySelector('#undo_get_selection_btn').onclick = function () {
+      undoGetSelectedRegion(song);
+    }
+    document.querySelector('#reset_filters').onclick = function () {
+      resetFilters();
+    }
+    document.querySelector('#delete_region').onclick = function () {
+      deleteRegion();
     }
     document.querySelector('#empty_region').onclick = function () {
-		emptyRegion();
+      emptyRegion();
     }
     document.querySelector('#select_all_btn').onclick = function () {
-		selectAllSample();
+      selectAllSample();
     }
     document.querySelector('#reverse').onclick = function () {
-		reverse();
+      reverse();
     }
     document.querySelector('#fade_in').onclick = function () {
-		fadeIn(fade_in_knob.getValue());
+      fadeIn(fade_in_knob.getValue());
     }
     document.querySelector('#fade_out').onclick = function () {
-		fadeOut(fade_out_knob.getValue());
+      fadeOut(fade_out_knob.getValue());
     }
     document.querySelector('#amplify_btn').onclick = function () {
-		amplify(amplify_knob.getValue());
+      amplify(amplify_knob.getValue());
     }
     document.querySelector('#export').onclick = function () {
-		exportBufferToFile();
+      exportBufferToFile();
     }
-    document.querySelector('#get_bpm').onclick = function () {
-		getBPM();
+    document.querySelector('#play_btn').onclick = function () {
+      wavesurfer.playPause();
+      //playBeats();
     }
     
     querySelectorFilters();
@@ -113,29 +114,29 @@ function initWavesurferEvents() {
 
 function createWavesurfer(song) {
     var wavesurfer = WaveSurfer.create({
-		container: '#waveform',
-		waveColor: '#D9DCFF',
-		progressColor: '#4353FF',
-		cursorColor: '#4353FF',
-		barWidth: 3,
-		barRadius: 3,
-		cursorWidth: 1,
-		height: 200,
-		plugins: [
-			WaveSurfer.cursor.create({
-				showTime: true,
-				opacity: 1,
-				customShowTimeStyle: {
-					'background-color': '#000',
-					color: '#fff',
-					padding: '2px',
-					'font-size': '10px'
-				}
-			}),
-			WaveSurfer.regions.create({drag:false})
-    	]
-	});
-	wavesurfer.enableDragSelection({});
+      container: '#waveform',
+      waveColor: '#D9DCFF',
+      progressColor: '#4353FF',
+      cursorColor: '#4353FF',
+      barWidth: 3,
+      barRadius: 3,
+      cursorWidth: 1,
+      height: 200,
+      plugins: [
+        WaveSurfer.cursor.create({
+          showTime: true,
+          opacity: 1,
+          customShowTimeStyle: {
+            'background-color': '#000',
+            color: '#fff',
+            padding: '2px',
+            'font-size': '10px'
+          }
+        }),
+        WaveSurfer.regions.create({drag:false})
+        ]
+    });
+    wavesurfer.enableDragSelection({});
     wavesurfer.load(song);
 	
     return wavesurfer;
@@ -487,6 +488,18 @@ function getBPM() {
     return bpm;
 }
 
+function playBeats() {
+  Tone.Transport.bpm.value = getBPM();
+  var synth = new Tone.MembraneSynth().toMaster()
+
+  var loop = new Tone.Loop(function(time){
+    synth.triggerAttackRelease("C1", "8n", time)
+  }, "4n")
+
+  loop.start(0)
+  Tone.Transport.toggle()
+}
+
 function getPeaks(data) {
     var partSize = 22050,
         parts = data.length / partSize,
@@ -553,4 +566,4 @@ function getIntervals(peaks) {
       }
     });
     return groups;
-  }
+}
