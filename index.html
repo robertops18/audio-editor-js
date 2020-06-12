@@ -1,0 +1,326 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Freesound - Editor</title>
+        <meta name="description" content="Freesound editor">
+        <meta name="author" content="Roberto Pérez">
+
+        <link rel="stylesheet" type="text/css" href="editor.css" />
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+        <script src="js/pureknob.js" type="text/javascript"></script>
+        <script src="js/bitcrush.js" type="text/javascript"></script>
+        <script src="js/smoothfade.js" type="text/javascript"></script>
+        <script src="js/pitchshifter.js" type="text/javascript"></script>
+
+        <script src="https://unpkg.com/wavesurfer.js"></script>
+        <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.js"></script>
+        <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.cursor.js"></script>
+        <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.timeline.js"></script>
+
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    </head>
+
+    <body>
+        <div id="waveform"></div>
+        <div id="wave-timeline"></div>
+        <div class="container">
+            <div class="row pt-2 justify-content-center">
+                <button class="btn btn-primary m-1" onclick="wavesurfer.skipBackward()">
+                    <i class="fa fa-step-backward fa-xs"></i>
+                    Backward
+                </button>
+                <button type="button" class="btn btn-primary m-1" id="play_btn">
+                    <i class="fas fa-play fa-xs"></i>
+                    Play
+                    /
+                    <i class="fas fa-pause fa-xs"></i>
+                    Pause
+                </button>
+                <button class="btn btn-primary m-1" onclick="wavesurfer.skipForward()">
+                    <i class="fa fa-step-forward fa-xs"></i>
+                    Forward
+                </button>
+            </div>
+            <div class="row p-1 justify-content-center">
+                <button class="btn btn-success m-1" id="undo" title="Ctrl+Z" disabled>
+                    <i class="fa fa-undo fa-xs"></i>
+                    Undo
+                </button>
+                <button class="btn btn-success m-1" id="redo" title="Ctrl+Shift+Z" disabled>
+                    <i class="fa fa-redo fa-xs"></i>
+                    Redo
+                </button>
+                <button class="btn btn-success m-1" id="export">Download edited sound</button>
+                <button class="btn btn-info m-1" id="help" data-toggle="modal" data-target="#helpModal">
+                    <i class="fa fa-question-circle fa-xs"></i>
+                    Help
+                </button>
+                <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="helpModalLabel">Freesound Editor Help</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Welcome to the Freesound online audio editor! These are the available operations:</p>
+                                <ul>
+                                    <li>
+                                        General operations
+                                        <ul>
+                                            <li>
+                                                Play and pause (Spacebar)
+                                            </li>
+                                            <li>
+                                                Skip backward (Left arrow) and forward (Right arrow)
+                                            </li>
+                                            <li>
+                                                Undo (Ctrl or Cmd + Z) and redo (Ctrl or Cmd + Shift + Z)
+                                            </li>
+                                            <li>
+                                                Download edited sample
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        Waveform related actions
+                                        <ul>
+                                            <li>
+                                                Zoom to selected region
+                                            </li>
+                                            <li>
+                                                Delete selected region (Backspace)
+                                            </li>
+                                            <li>
+                                                Clear selected region
+                                            </li>
+                                            <li>
+                                                Get original sample
+                                            </li>
+                                            <li>
+                                                Reset filters
+                                            </li>
+                                            <li>
+                                                Reverse sample
+                                            </li>
+                                            <li>
+                                                Zoom in and out
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        Filters
+                                        <ul>
+                                            <li>
+                                                Lowpass filter
+                                            </li>
+                                            <li>
+                                                Highpass filter
+                                            </li>
+                                            <li>
+                                                Bandpass filter
+                                            </li>
+                                            <li>
+                                                Lowshelf filter
+                                            </li>
+                                            <li>
+                                                Highshelf filter
+                                            </li>
+                                            <li>
+                                                Peaking filter
+                                            </li>
+                                            <li>
+                                                Notch filter
+                                            </li>
+                                            <li>
+                                                Allpass filter
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        Effects
+                                        <ul>
+                                            <li>
+                                                Amplify waveform
+                                            </li>
+                                            <li>
+                                                Fade in and out (select the point to start and the duration of the effect and then apply)
+                                            </li>
+                                            <li>
+                                                Bitcrush effect
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Start editing!</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="accordion1">
+            <div class="card m-2">
+                <div class="card-header" id="headingOne"  data-toggle="collapse" data-target="#collapseActions" aria-expanded="true" aria-controls="collapseActions">
+                    <h5 class="mb-0">
+                        Actions
+                        <i class="fas fa-caret-down"></i>
+                    </h5>
+                </div>
+                <div id="collapseActions" class="collapse" aria-labelledby="headingOne" data-parent="#accordion1">
+                    <div class="row p-1 justify-content-center">
+                        <button class="btn btn-success m-1" id="get_selection_btn" disabled>Get Selected Region</button>
+                        <button class="btn btn-success m-1" id="delete_region" disabled>Delete Region</button>
+                        <button class="btn btn-success m-1" id="empty_region" disabled>Clear Region</button>
+                        <button class="btn btn-success m-1" id="undo_get_selection_btn">Get Original Sample</button>
+                        <button class="btn btn-success m-1" id="reset_filters">Reset Filters</button>
+                        <button class="btn btn-success m-1" id="reverse">Reverse</button>
+                    </div>
+                    <div class="row p-1 justify-content-center">
+                        <i class="fas fa-search-minus mr-2"></i>
+                        <input type="range" min="17" max="200" value="0" id="slider" style="width: 60%"/>
+                        <i class="fas fa-search-plus ml-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="accordion2">
+            <div class="card m-2">
+                <div class="card-header" id="headingTwo"   data-toggle="collapse" data-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
+                    <h5 class="mb-0">
+                        Filters
+                        <i class="fas fa-caret-down"></i>
+                    </h5>
+                </div>
+                <div id="collapseFilters" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion2">
+                    <div class="container">
+                        <div class="row m-2">
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="lowpass_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="highpass_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="bandpass_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="lowshelf_knob"></div>
+                            </div>
+
+                            <div class="w-100"></div>
+
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowpass_filter_btn">Apply Lowpass filter</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="highpass_filter_btn">Apply Highpass filter</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="bandpass_filter_btn">Apply Bandpass filter</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowshelf_filter_btn">Apply Lowshelf filter</button>
+                            </div>
+
+                            <div class="w-100"></div>
+
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="highshelf_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="peaking_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="notch_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="allpass_knob"></div>
+                            </div>
+
+                            <div class="w-100"></div>
+
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="highshelf_filter_btn">Apply Highshelf filter</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="peaking_filter_btn">Apply Peaking filter</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="notch_filter_btn">Apply Notch<br>filter</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="allpass_filter_btn">Apply Allpass filter</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="accordion3">
+            <div class="card m-2">
+                <div class="card-header" id="headingThree" data-toggle="collapse" data-target="#collapseEffects" aria-expanded="true" aria-controls="collapseEffects">
+                    <h5 class="mb-0">
+                        Effects
+                        <i class="fas fa-caret-down"></i>
+                    </h5>
+                </div>
+                <div id="collapseEffects" class="collapse" aria-labelledby="headingThree" data-parent="#accordion3">
+                    <div class="container">
+                        <div class="row mt-2 mb-2">
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="amplify_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="fade_in_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="fade_out_knob"></div>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="m-1" id="bitcrush_knob"></div>
+                            </div>
+
+                            <div class="w-100"></div>
+
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="amplify_btn">Amplify</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="fade_in">Fade in</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="fade_out">Fade out</button>
+                            </div>
+                            <div class="col-3 text-center">
+                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="bitcrush">Bitcrush effect</button>
+                            </div>
+    <!--
+                            <div class="w-100"></div>
+
+                            <div class="col-12 text-center">
+                                <button class="btn btn-success m-1" id="init_pitch_shifter">Init Pitch Shifter</button>
+                            </div>
+                            <div class="col-12 text-center">
+                                <input type="range" autofocus="true" min="0.1" max="2.0" name="pitchSlider" value="1.0" id="pitchSlider" step="0.01" list="pitchrange">
+                            </div>
+    -->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="js/app.js"></script>
+
+    </body>
+</html>

@@ -1,9 +1,19 @@
-//var song = 'http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3'
-var song = './../audio/bejo-fiestaenlaterraza.mp3'
-var wavesurfer = createWavesurfer(song)
+var sound = "https://freesound.org/data/previews/415/415072_2155630-lq.mp3";
+var wavesurfer = createWavesurfer(sound);
+var pitchShifter;
 
-var AudioContext = window.AudioContext          // Default
-              || window.webkitAudioContext;  // Safari and old versions of Chrome
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+document.body.onkeyup = function(event) {
+    keyUp(event);
+}
+document.body.onkeydown = function(event) {
+    if (event.keyCode == 32 || event.keyCode == 39 || event.keyCode == 37) {
+        return false;
+    } else {
+        keyDown(event);
+    }
+};
 
 // Query Selectors
 initQuerySelectors();
@@ -12,89 +22,128 @@ initQuerySelectors();
 initWavesurferEvents();
 
 // Knobs filters
-var lowpass_knob = createKnob("lowpass_knob", 0, 500);
-var highpass_knob = createKnob("highpass_knob", 0, 500);
-var bandpass_knob = createKnob("bandpass_knob", 0, 500);
-var lowshelf_knob = createKnob("lowshelf_knob", 0, 500);
-var highshelf_knob = createKnob("highshelf_knob", 0, 500);
-var peaking_knob = createKnob("peaking_knob", 0, 500);
-var notch_knob = createKnob("notch_knob", 0, 500);
-var allpass_knob = createKnob("allpass_knob", 0, 500);
+var lowpass_knob = createKnob("lowpass_knob", 0, 500, 'Hz');
+var highpass_knob = createKnob("highpass_knob", 0, 500, 'Hz');
+var bandpass_knob = createKnob("bandpass_knob", 0, 500, 'Hz');
+var lowshelf_knob = createKnob("lowshelf_knob", 0, 500, 'Hz');
+var highshelf_knob = createKnob("highshelf_knob", 0, 500, 'Hz');
+var peaking_knob = createKnob("peaking_knob", 0, 500, 'Hz');
+var notch_knob = createKnob("notch_knob", 0, 500, 'Hz');
+var allpass_knob = createKnob("allpass_knob", 0, 500, 'Hz');
 
 //Knobs effects
-var amplify_knob = createKnob("amplify_knob", 1, 5, 1);
-var fade_in_knob = createKnob("fade_in_knob", 1, 10, 1);
-var fade_out_knob = createKnob("fade_out_knob", 1, 10, 1);
+var amplify_knob = createKnob("amplify_knob", 1, 5,'', 1);
+var fade_in_knob = createKnob("fade_in_knob", 1, 10, 'Seconds', 1);
+var fade_out_knob = createKnob("fade_out_knob", 1, 10, 'Seconds', 1);
+var bitcrush_knob = createKnob("bitcrush_knob", 4, 16, 'Bits',4);
+
+/*
+// Pitch slider
+const pitchSlider = document.getElementById('pitchSlider');
+pitchSlider.addEventListener('input', function () {
+    pitchShifter.pitch = this.value;
+});
+*/
+
+// Undo and redo data structures
+var undoArray = []
+var redoArray = []
+
+// Array of applied filters for undo and redo
+var appliedFilters = []
 
 // Initialization functions 
 function initQuerySelectors() {
     document.querySelector('#slider').oninput = function () {
-		  wavesurfer.zoom(Number(this.value));
+        wavesurfer.zoom(Number(this.value));
     }
     document.querySelector('#get_selection_btn').onclick = function () {
-      getSelectedRegion();
+        toUndo('buffer', wavesurfer.backend.buffer);
+        getSelectedRegion();
     }
     document.querySelector('#undo_get_selection_btn').onclick = function () {
-      undoGetSelectedRegion(song);
+        toUndo('buffer', wavesurfer.backend.buffer);
+        getOriginalSample(sound);
     }
     document.querySelector('#reset_filters').onclick = function () {
-      resetFilters();
+        resetFilters();
     }
     document.querySelector('#delete_region').onclick = function () {
-      deleteRegion();
+        toUndo('buffer', wavesurfer.backend.buffer);
+        deleteRegion();
     }
     document.querySelector('#empty_region').onclick = function () {
-      emptyRegion();
-    }
-    document.querySelector('#select_all_btn').onclick = function () {
-      selectAllSample();
+        toUndo('buffer', wavesurfer.backend.buffer);
+        emptyRegion();
     }
     document.querySelector('#reverse').onclick = function () {
-      reverse();
+        toUndo('buffer', wavesurfer.backend.buffer);
+        reverse();
     }
     document.querySelector('#fade_in').onclick = function () {
-      fadeIn(fade_in_knob.getValue());
+        fadeIn(fade_in_knob.getValue());
     }
     document.querySelector('#fade_out').onclick = function () {
-      fadeOut(fade_out_knob.getValue());
+        fadeOut(fade_out_knob.getValue());
     }
     document.querySelector('#amplify_btn').onclick = function () {
-      amplify(amplify_knob.getValue());
+        amplify(amplify_knob.getValue());
     }
     document.querySelector('#export').onclick = function () {
-      exportBufferToFile();
+        exportBufferToFile();
     }
     document.querySelector('#play_btn').onclick = function () {
-      wavesurfer.playPause();
-      //playBeats();
+        playPause();
     }
+    document.querySelector('#undo').onclick = function () {
+        undo();
+    }
+    document.querySelector('#redo').onclick = function () {
+        redo();
+    }
+    document.querySelector('#bitcrush').onclick = function () {
+        applyBitcrushEffect(bitcrush_knob.getValue());
+    }
+    /*
+    document.querySelector('#init_pitch_shifter').onclick = function () {
+        initPitchShifter();
+    }
+     */
     
     querySelectorFilters();
 }
 
 function querySelectorFilters() {
     document.querySelector('#lowpass_filter_btn').onclick = function () {
+        toUndo('filter', {filterType: 'lowpass', frequency: lowpass_knob.getValue()});
 		applyFilter('lowpass', lowpass_knob.getValue());
 	}
 	document.querySelector('#highpass_filter_btn').onclick = function () {
+        toUndo('filter', {filterType: 'highpass', frequency: highpass_knob.getValue()});
 		applyFilter('highpass', highpass_knob.getValue());
 	}
 	document.querySelector('#bandpass_filter_btn').onclick = function () {
+        toUndo('filter', {filterType: 'bandpass', frequency: bandpass_knob.getValue()});
 		applyFilter('bandpass', bandpass_knob.getValue());
 	}
 	document.querySelector('#lowshelf_filter_btn').onclick = function () {
+        toUndo('filter', {filterType: 'lowshelf', frequency: lowshelf_knob.getValue()});
 		applyFilter('lowshelf', lowshelf_knob.getValue());
 	}
 	document.querySelector('#highshelf_filter_btn').onclick = function () {
+        toUndo('filter', {filterType: 'highshelf', frequency: highshelf_knob.getValue()});
 		applyFilter('highshelf', highshelf_knob.getValue());
 	}
 	document.querySelector('#peaking_filter_btn').onclick = function () {
+        toUndo('filter', {filterType: 'peaking', frequency: peaking_knob.getValue()});
 		applyFilter('peaking', peaking_knob.getValue());
 	}
 	document.querySelector('#notch_filter_btn').onclick = function () {
+        toUndo('filter', {filterType: 'notch', frequency: notch_knob.getValue()});
 		applyFilter('notch', notch_knob.getValue());
 	}
 	document.querySelector('#allpass_filter_btn').onclick = function () {
+        toUndo('filter', {filterType: 'allpass', frequency: allpass_knob.getValue()});
 		applyFilter('allpass', allpass_knob.getValue());
 	}
 }
@@ -103,48 +152,144 @@ function initWavesurferEvents() {
     // Reset region when clicking the waveform
 	wavesurfer.on('seek', function(region) {
         wavesurfer.clearRegions();
-        setDisabled(true);
+        setDisabledWhenNoRegion(true);
 	});
 
 	// Delete previous region when creating a new one
 	wavesurfer.on('region-created', function() {
 		deletePreviousRegion();
 	});
+
+	/*
+	wavesurfer.on('finish', function() {
+	    print('FINISH!')
+		wavesurfer.backend.gainNode.gain.cancelScheduledValues(wavesurfer.backend.ac.currentTime);
+	    wavesurfer.backend.gainNode.gain.setValueAtTime(1.0, 0.0);
+	    print(wavesurfer.backend.gainNode)
+	});
+	 */
 }
 
 function createWavesurfer(song) {
     var wavesurfer = WaveSurfer.create({
-      container: '#waveform',
-      waveColor: '#D9DCFF',
-      progressColor: '#4353FF',
-      cursorColor: '#4353FF',
-      barWidth: 3,
-      barRadius: 3,
-      cursorWidth: 1,
-      height: 200,
-      plugins: [
-        WaveSurfer.cursor.create({
-          showTime: true,
-          opacity: 1,
-          customShowTimeStyle: {
-            'background-color': '#000',
-            color: '#fff',
-            padding: '2px',
-            'font-size': '10px'
-          }
-        }),
-        WaveSurfer.regions.create({drag:false})
+        container: '#waveform',
+        waveColor: '#f5a52c',
+        progressColor: '#b36d04',
+        cursorColor: '#FFFFFF',
+        backgroundColor: '#111212',
+        barWidth: 3,
+        barRadius: 3,
+        cursorWidth: 1,
+        height: 200,
+        plugins: [
+            WaveSurfer.cursor.create({
+              showTime: true,
+              opacity: 1,
+              customShowTimeStyle: {
+                'background-color': '#000',
+                color: '#fff',
+                padding: '2px',
+                'font-size': '10px'
+              }
+            }),
+            WaveSurfer.regions.create({drag:false, color: 'rgba(256, 256, 256, 1)'}),
+            WaveSurfer.timeline.create({
+                container: '#wave-timeline'
+            })
         ]
     });
-    wavesurfer.enableDragSelection({});
+    wavesurfer.enableDragSelection({drag:false, color: 'rgba(256, 256, 256, 0.3)'});
     wavesurfer.load(song);
-	
+
     return wavesurfer;
+}
+
+function initPitchShifter() {
+    pitchShifter = getPitchShifter(wavesurfer.backend.ac, wavesurfer.backend.buffer);
+    pitchShifter.pitch = pitchSlider.value;
+    //pitchShifter.connect(wavesurfer.backend.gainNode);
+    print(pitchShifter)
+    //wavesurfer.backend.gainNode.connect(wavesurfer.backend.ac.destination);
+}
+
+function playPause() {
+    wavesurfer.playPause();
 }
 
 // Print aux function
 function print(s) {
     console.log(s);
+}
+
+// Undo and redo actions
+
+function undo() {
+    if (undoArray.length > 0) {
+        var undoAction = undoArray.pop();
+        document.querySelector('#undo').disabled = undoArray.length === 0;
+        switch (undoAction.type) {
+            case 'buffer':
+                toRedo('buffer', wavesurfer.backend.buffer);
+                var previousBuffer = undoAction.action;
+                wavesurfer.empty()
+                wavesurfer.loadDecodedBuffer(previousBuffer);
+                break;
+            case 'filter': // TODO: Undo functions with filters
+                toRedo('filter', undoAction.action);
+                // 1. Pop filter from array
+                appliedFilters.pop()
+                // 2. Cancel its behaviour or apply previous one
+                if (appliedFilters.length > 0) {
+                    var lastFilter = appliedFilters[appliedFilters.length - 1]
+                    applyFilter(lastFilter.filterType, lastFilter.frequency, true);
+                } else {
+                    cancelFilter()
+                }
+                break;
+        }
+    } else {
+        print('Nothing to undo')
+    }
+}
+
+function redo() {
+    if (redoArray.length > 0) {
+        var redoAction = redoArray.pop();
+        document.querySelector('#redo').disabled = redoArray.length === 0;
+        switch (redoAction.type) {
+            case 'buffer':
+                toUndo('buffer', wavesurfer.backend.buffer);
+                var previousBuffer = redoAction.action;
+                wavesurfer.empty()
+                wavesurfer.loadDecodedBuffer(previousBuffer);
+                break;
+            case 'filter': // TODO: Redo functions with filters
+                toUndo('filter', redoAction.action);
+                // Apply filter
+                applyFilter(redoAction.action.filterType, redoAction.action.frequency);
+                break;
+        }
+    } else {
+        print('Nothing to redo')
+    }
+}
+
+function toUndo(type, action) {
+    var undoAction = {
+        type: type,
+        action: action
+    }
+    undoArray.push(undoAction);
+    document.querySelector('#undo').disabled = undoArray.length === 0;
+}
+
+function toRedo(type, action) {
+    var redoAction = {
+        type: type,
+        action: action
+    }
+    redoArray.push(redoAction);
+    document.querySelector('#redo').disabled = redoArray.length === 0;
 }
 
 // Buffer related functions
@@ -187,11 +332,11 @@ function exportBufferToFile() {
     document.body.appendChild(a);
     a.style = "display: none";
     a.href = url;
-    a.download = "sample.wav";
+    var sound = 'sample__EDIT.wav';
+    a.download = sound;
     a.click();
     window.URL.revokeObjectURL(url);
 }
-
 
 function writeUTFBytes(view, offset, string) {
     for (var i = 0; i < string.length; i++) {
@@ -238,19 +383,6 @@ function encodeWAV(originalBuffer){
     return blob;
   }
 
-function fadeIn(duration) {
-    var gainNode = wavesurfer.backend.gainNode;
-    gainNode.gain.setValueAtTime(0, wavesurfer.getCurrentTime());
-    gainNode.gain.linearRampToValueAtTime(3.0, wavesurfer.getCurrentTime() + duration);
-}
-
-function fadeOut(duration) {
-    print(wavesurfer.getCurrentTime())
-    var gainNode = wavesurfer.backend.gainNode;
-    gainNode.gain.linearRampToValueAtTime(0.01, wavesurfer.getCurrentTime() + duration);
-    print(gainNode.gain);
-}
-
 function reverse() {
     var buffer = wavesurfer.backend.buffer;
     Array.prototype.reverse.call( buffer.getChannelData(0) );
@@ -259,6 +391,21 @@ function reverse() {
     }
     wavesurfer.empty();
     wavesurfer.loadDecodedBuffer(buffer);
+}
+
+// Gain related functions
+
+function fadeIn(duration) { //TODO
+    var gainNode = wavesurfer.backend.gainNode;
+    gainNode.gain.cancelScheduledValues( wavesurfer.backend.ac.currentTime );
+    gainNode.gain.setValueAtTime( 0.00001, wavesurfer.backend.ac.currentTime );
+    gainNode.gain.exponentialRampToValueAtTime( 1.0, wavesurfer.backend.ac.currentTime + duration );
+}
+
+function fadeOut(duration) {
+    var gainNode = wavesurfer.backend.gainNode;
+    var sm = getSmoothFade(wavesurfer.backend.ac, gainNode, {type: 'exponential'});
+    sm.fadeOut();
 }
 
 function amplify(value) {
@@ -285,26 +432,18 @@ function getSelectedRegion() {
         wavesurfer.loadDecodedBuffer(buffer)
     }
     wavesurfer.clearRegions();
-    setDisabled(true);
+    setDisabledWhenNoRegion(true);
 }
 
-function undoGetSelectedRegion(song) {
+function getOriginalSample(song) {
     wavesurfer.clearRegions();
     wavesurfer.empty()
     wavesurfer.load(song);
-    setDisabled(true);
-}
-
-function selectAllSample() {
-    wavesurfer.addRegion({
-        start: 0,
-        end: wavesurfer.getDuration()
-    });
-    setDisabled(false);
+    setDisabledWhenNoRegion(true);
 }
 
 function deletePreviousRegion() {
-    setDisabled(false);
+    setDisabledWhenNoRegion(false);
     var regionList = wavesurfer.regions.list;
     if (Object.keys(regionList).length > 0) {
         var firstRegionID = Object.keys(regionList)[0];
@@ -313,10 +452,10 @@ function deletePreviousRegion() {
 }
 
 function deleteRegion() {
-    setDisabled(true);
+    setDisabledWhenNoRegion(true);
 	var regionList = wavesurfer.regions.list;
 	var region = regionList[Object.keys(regionList)[0]]
-	
+
 	var startTime = region.start;
     var endTime = region.end;
 
@@ -336,21 +475,21 @@ function deleteRegion() {
 
         resetAndLoadNewBuffer(finalBuffer);
     }
-    // Case 3: Region is at the end of the sample 
+    // Case 3: Region is at the end of the sample
     else if (endTime == totalDuration) {
         finalBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
         copyBuffer(wavesurfer.backend.buffer, 0, startTime, finalBuffer, 0);
 
         resetAndLoadNewBuffer(finalBuffer);
-    }     
+    }
     // Case 4: Region is in the middle
     else {
         firstBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
         copyBuffer(wavesurfer.backend.buffer, 0, startTime, firstBuffer, 0);
-    
+
         secondBuffer = createBuffer(wavesurfer.backend.buffer, totalDuration - endTime);
         copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, secondBuffer, 0);
-    
+
         finalBuffer = concatBuffer(firstBuffer, secondBuffer);
 
         resetAndLoadNewBuffer(finalBuffer);
@@ -369,7 +508,7 @@ function resetAndLoadNewBuffer(finalBuffer = null) {
 }
 
 function emptyRegion() {
-    setDisabled(true);
+    setDisabledWhenNoRegion(true);
     var regionList = wavesurfer.regions.list;
 	var region = regionList[Object.keys(regionList)[0]]
 	
@@ -425,38 +564,55 @@ function emptyRegion() {
     }
 }
 
-function setDisabled(status) {
+function setDisabledWhenNoRegion(status) {
     document.querySelector('#delete_region').disabled = status;
     document.querySelector('#empty_region').disabled = status;
     document.querySelector('#get_selection_btn').disabled = status;
-    //document.querySelector('#fade_in').disabled = status;
-    //document.querySelector('#fade_out').disabled = status;
 }
 
 function getRegion() {
     var regionList = wavesurfer.regions.list;
-    var region = regionList[Object.keys(regionList)[0]]
+    var region = numOfRegions() > 0 ? regionList[Object.keys(regionList)[0]] : null
     return region;
 }
 
+function numOfRegions() {
+    return Object.keys(wavesurfer.regions.list).length;
+}
+
 // Filter related functions
-function applyFilter(filterType, frequency) {
+function applyFilter(filterType, frequency, fromCancel = false) {
 	var filter = wavesurfer.backend.ac.createBiquadFilter();
 	filter.type = filterType;
 	filter.frequency.value = frequency;
 	wavesurfer.backend.setFilter(filter);
+
+	if (!fromCancel) {
+	    appliedFilters.push({
+            filterType: filterType,
+            frequency: frequency
+        });
+    }
 }
 
-function createKnob(divID, valMin, valMax, defaultValue = 0) {
+function createKnob(divID, valMin, valMax, label, defaultValue = 0) {
 	var myKnob = pureknob.createKnob(134, 134);
 	myKnob.setProperty('valMin', valMin);
 	myKnob.setProperty('valMax', valMax);
-    myKnob.setProperty('colorFG', '#4353FF');
+    myKnob.setProperty('colorFG', '#0A61FE');
     myKnob.setProperty('val', defaultValue);
+    myKnob.setProperty('angleStart', -0.75 * Math.PI);
+    myKnob.setProperty('angleEnd', 0.75 * Math.PI);
+    myKnob.setProperty('label', label);
+    myKnob.setProperty('colorLabel', '#0A61FE');
 	var node = myKnob.node();
 	var elem = document.getElementById(divID);
 	elem.appendChild(node);
 	return myKnob;
+}
+
+function cancelFilter() {
+    applyFilter('allpass', 0, true);
 }
 
 function resetFilters() {
@@ -475,95 +631,45 @@ function resetFilters() {
     amplify(1);
 }
 
-// Tempo
+// Bitcrush effect
 
-function getBPM() {
-    var peaks = getPeaks(wavesurfer.backend.buffer.getChannelData(0));
-    var groups = getIntervals(peaks);
-    var top = groups.sort(function(intA, intB) {
-        return intB.count - intA.count;
-    }).splice(0, 5);
-
-    var bpm = Math.round(top[0].tempo);
-    return bpm;
+function applyBitcrushEffect(bits) {
+    var bitcrushNode = getBitCrushNode(wavesurfer.backend.ac, bits);
+    wavesurfer.backend.source.connect(bitcrushNode);
+    bitcrushNode.connect(wavesurfer.backend.ac.destination);
 }
 
-function playBeats() {
-  Tone.Transport.bpm.value = getBPM();
-  var synth = new Tone.MembraneSynth().toMaster()
+// Key events
 
-  var loop = new Tone.Loop(function(time){
-    synth.triggerAttackRelease("C1", "8n", time)
-  }, "4n")
-
-  loop.start(0)
-  Tone.Transport.toggle()
-}
-
-function getPeaks(data) {
-    var partSize = 22050,
-        parts = data.length / partSize,
-        peaks = [];
-  
-    for (var i = 0; i < parts; i++) {
-      var max = 0;
-      for (var j = i * partSize; j < (i + 1) * partSize; j++) {
-        var volume = Math.abs(data[j]);
-        if (!max || (volume > max.volume)) {
-          max = {
-            position: j,
-            volume: volume
-          };
-        }
-      }
-      peaks.push(max);
+function keyUp(event) {
+    switch (event.keyCode) {
+        case 32: // space bar
+            playPause();
+            break;
+        case 37: // arrow left
+            wavesurfer.skipBackward();
+            break;
+        case 39: // arrow right
+            wavesurfer.skipForward();
+            break;
     }
-  
-    // We then sort the peaks according to volume...
-  
-    peaks.sort(function(a, b) {
-      return b.volume - a.volume;
-    });
-  
-    // ...take the loundest half of those...
-  
-    peaks = peaks.splice(0, peaks.length * 0.5);
-  
-    // ...and re-sort it back based on position.
-  
-    peaks.sort(function(a, b) {
-      return a.position - b.position;
-    });
-  
-    return peaks;
 }
 
-function getIntervals(peaks) {
-    var groups = [];
-  
-    peaks.forEach(function(peak, index) {
-      for (var i = 1; (index + i) < peaks.length && i < 10; i++) {
-        var group = {
-          tempo: (60 * 44100) / (peaks[index + i].position - peak.position),
-          count: 1
-        };
-  
-        while (group.tempo < 90) {
-          group.tempo *= 2;
-        }
-  
-        while (group.tempo > 180) {
-          group.tempo /= 2;
-        }
-  
-        group.tempo = Math.round(group.tempo);
-  
-        if (!(groups.some(function(interval) {
-          return (interval.tempo === group.tempo ? interval.count++ : 0);
-        }))) {
-          groups.push(group);
-        }
-      }
-    });
-    return groups;
+function keyDown(event) {
+    //print(event);
+    switch (event.keyCode) {
+        case 8: // delete
+            if (numOfRegions() > 0) {
+                toUndo('buffer', wavesurfer.backend.buffer);
+                deleteRegion();
+            }
+            break;
+        case 90: // z
+            if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+                undo();
+            } else if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+                redo();
+            }
+            break;
+    }
 }
