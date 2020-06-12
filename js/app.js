@@ -216,6 +216,12 @@ function playPause() {
     wavesurfer.playPause();
 }
 
+function loadSong() {
+    var sample = document.getElementById("sampleSelect").value;
+    wavesurfer.empty();
+    wavesurfer.load(sample);
+}
+
 // Print aux function
 function print(s) {
     console.log(s);

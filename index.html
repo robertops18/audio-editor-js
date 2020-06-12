@@ -26,6 +26,14 @@
     </head>
 
     <body>
+        <div id="select_sample">
+            <p>Select a sample to start editing!</p>
+            <select id="sampleSelect" onchange="loadSong()">
+                <option value="https://freesound.org/data/previews/415/415072_2155630-lq.mp3">phenomenom.wav</option>
+                <option value="https://freesound.org/data/previews/414/414825_1083532-lq.mp3">church bell</option>
+                <option value="https://freesound.org/data/previews/414/414757_8161277-lq.mp3">2ed60bpm_8.wav</option>
+            </select>
+        </div>
         <div id="waveform"></div>
         <div id="wave-timeline"></div>
         <div class="container">
