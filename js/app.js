@@ -1,6 +1,7 @@
 var sound = "https://freesound.org/data/previews/415/415072_2155630-lq.mp3";
 var wavesurfer = createWavesurfer(sound);
 
+var zoomValueInit = 0
 var zoomValue = 0
 var zoomRatio = 5
 
@@ -63,7 +64,7 @@ function initQuerySelectors() {
         wavesurfer.zoom(zoomValue);
     }
     document.querySelector('#zoom_out').onclick = function () {
-        if (zoomValue > 0) {
+        if (zoomValue > zoomValueInit) {
             zoomValue -= zoomRatio
             wavesurfer.zoom(zoomValue);
         }
@@ -171,6 +172,10 @@ function initWavesurferEvents() {
 		deletePreviousRegion();
 	});
 
+    wavesurfer.on('ready', function() {
+        zoomValueInit = 900 / wavesurfer.getDuration();
+        zoomValue = zoomValueInit
+    })
 	/*
 	wavesurfer.on('finish', function() {
 	    print('FINISH!')
