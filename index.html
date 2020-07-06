@@ -1,6 +1,8 @@
 <!doctype html>
 
 <html lang="en">
+
+
     <head>
         <meta charset="utf-8">
         <title>Freesound - Editor</title>
@@ -21,11 +23,13 @@
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.cursor.js"></script>
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.timeline.js"></script>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     </head>
 
     <body>
+        
         <div id="select_sample">
             <p>Select a sample to start editing!</p>
             <select id="sampleSelect" onchange="loadSong()">
@@ -34,148 +38,172 @@
                 <option value="https://freesound.org/data/previews/414/414757_8161277-lq.mp3">2ed60bpm_8.wav</option>
             </select>
         </div>
-        <div id="waveform"></div>
-        <div id="wave-timeline"></div>
-        <div class="container">
-            <div class="row pt-2 justify-content-center">
-                <button class="btn btn-primary m-1" onclick="wavesurfer.skipBackward()">
-                    <i class="fa fa-step-backward fa-xs"></i>
-                    Backward
+
+        <!-- controls -->
+        <div class="row pl-2">
+            <div class="border rounded m-2" id="play_pause">
+                <button class="btn btn-primary m-1" onclick="wavesurfer.skipBackward()" data-toggle="tooltip" data-placement="bottom" title="Back 2 seconds">
+                    <i class="fa fa-step-backward"></i>
                 </button>
-                <button type="button" class="btn btn-primary m-1" id="play_btn">
-                    <i class="fas fa-play fa-xs"></i>
-                    Play
+                <button type="button" class="btn btn-primary m-1" id="play_btn" data-toggle="tooltip" data-placement="bottom" title="Play/Pause">
+                    <i class="fas fa-play"></i>
                     /
-                    <i class="fas fa-pause fa-xs"></i>
-                    Pause
+                    <i class="fas fa-pause" ></i>
                 </button>
-                <button class="btn btn-primary m-1" onclick="wavesurfer.skipForward()">
-                    <i class="fa fa-step-forward fa-xs"></i>
-                    Forward
+                <button class="btn btn-primary m-1" onclick="wavesurfer.skipForward()" data-toggle="tooltip" data-placement="bottom" title="Advance 2 seconds">
+                    <i class="fa fa-step-forward"></i>
                 </button>
             </div>
-            <div class="row p-1 justify-content-center">
-                <button class="btn btn-success m-1" id="undo" title="Ctrl+Z" disabled>
-                    <i class="fa fa-undo fa-xs"></i>
-                    Undo
+            <div class="border rounded m-2" id="undo_redo">
+                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Undo" style="display: inline-block;">
+                    <button class="btn btn-success m-1" id="undo" disabled style="pointer-events: none;">
+                        <i class="fa fa-undo"></i>
+                    </button>
+                </div>
+                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Redo" style="display: inline-block;">
+                    <button class="btn btn-success m-1" id="redo" disabled style="pointer-events: none;">
+                        <i class="fa fa-redo"></i>
+                    </button>
+                </div>
+                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Clear region" style="display: inline-block;">
+                    <button class="btn btn-success m-1" id="empty_region" disabled style="pointer-events: none;">
+                        <i class="fa fa-backspace"></i>
+                    </button>
+                </div>
+                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Delete region" style="display: inline-block;">
+                    <button class="btn btn-success m-1" id="delete_region" disabled style="pointer-events: none;">
+                        <i class="fa fa-trash-alt"></i>
+                    </button>
+                </div>
+                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Get selected region" style="display: inline-block;">
+                    <button class="btn btn-success m-1" id="get_selection_btn" disabled style="pointer-events: none;">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+                <button class="btn btn-success m-1" id="undo_get_selection_btn" data-toggle="tooltip" data-placement="bottom" title="Get original sample">
+                    <i class="fa fa-file-audio"></i>
                 </button>
-                <button class="btn btn-success m-1" id="redo" title="Ctrl+Shift+Z" disabled>
-                    <i class="fa fa-redo fa-xs"></i>
-                    Redo
+    
+                <button class="btn btn-success m-1" id="export" data-toggle="tooltip" data-placement="bottom" title="Download edited sample">
+                    <i class="fa fa-download"></i>
                 </button>
-                <button class="btn btn-success m-1" id="export">Download edited sound</button>
-                <button class="btn btn-info m-1" id="help" data-toggle="modal" data-target="#helpModal">
-                    <i class="fa fa-question-circle fa-xs"></i>
-                    Help
+                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Help" style="display: inline-block;">
+                    <button class="btn btn-info m-1" id="help" data-toggle="modal" data-target="#helpModal">
+                    <i class="fa fa-question-circle"></i>
                 </button>
-                <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="helpModalLabel">Freesound Editor Help</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Welcome to the Freesound online audio editor! These are the available operations:</p>
-                                <ul>
-                                    <li>
-                                        General operations
-                                        <ul>
-                                            <li>
-                                                Play and pause (Spacebar)
-                                            </li>
-                                            <li>
-                                                Skip backward (Left arrow) and forward (Right arrow)
-                                            </li>
-                                            <li>
-                                                Undo (Ctrl or Cmd + Z) and redo (Ctrl or Cmd + Shift + Z)
-                                            </li>
-                                            <li>
-                                                Download edited sample
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        Waveform related actions
-                                        <ul>
-                                            <li>
-                                                Zoom to selected region
-                                            </li>
-                                            <li>
-                                                Delete selected region (Backspace)
-                                            </li>
-                                            <li>
-                                                Clear selected region
-                                            </li>
-                                            <li>
-                                                Get original sample
-                                            </li>
-                                            <li>
-                                                Reset filters
-                                            </li>
-                                            <li>
-                                                Reverse sample
-                                            </li>
-                                            <li>
-                                                Zoom in and out
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        Filters
-                                        <ul>
-                                            <li>
-                                                Lowpass filter
-                                            </li>
-                                            <li>
-                                                Highpass filter
-                                            </li>
-                                            <li>
-                                                Bandpass filter
-                                            </li>
-                                            <li>
-                                                Lowshelf filter
-                                            </li>
-                                            <li>
-                                                Highshelf filter
-                                            </li>
-                                            <li>
-                                                Peaking filter
-                                            </li>
-                                            <li>
-                                                Notch filter
-                                            </li>
-                                            <li>
-                                                Allpass filter
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        Effects
-                                        <ul>
-                                            <li>
-                                                Amplify waveform
-                                            </li>
-                                            <li>
-                                                Fade in and out (select the point to start and the duration of the effect and then apply)
-                                            </li>
-                                            <li>
-                                                Bitcrush effect
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-dismiss="modal">Start editing!</button>
-                            </div>
+                </div>
+            </div>
+            <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="helpModalLabel">Freesound Editor Help</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Welcome to the Freesound online audio editor! These are the available operations:</p>
+                            <ul>
+                                <li>
+                                    General operations
+                                    <ul>
+                                        <li>
+                                            Play and pause (Spacebar)
+                                        </li>
+                                        <li>
+                                            Skip backward (Left arrow) and forward (Right arrow)
+                                        </li>
+                                        <li>
+                                            Undo (Ctrl or Cmd + Z) and redo (Ctrl or Cmd + Shift + Z)
+                                        </li>
+                                        <li>
+                                            Download edited sample
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    Waveform related actions
+                                    <ul>
+                                        <li>
+                                            Zoom to selected region
+                                        </li>
+                                        <li>
+                                            Delete selected region (Backspace)
+                                        </li>
+                                        <li>
+                                            Clear selected region
+                                        </li>
+                                        <li>
+                                            Get original sample
+                                        </li>
+                                        <li>
+                                            Reset filters
+                                        </li>
+                                        <li>
+                                            Reverse sample
+                                        </li>
+                                        <li>
+                                            Zoom in and out
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    Filters
+                                    <ul>
+                                        <li>
+                                            Lowpass filter
+                                        </li>
+                                        <li>
+                                            Highpass filter
+                                        </li>
+                                        <li>
+                                            Bandpass filter
+                                        </li>
+                                        <li>
+                                            Lowshelf filter
+                                        </li>
+                                        <li>
+                                            Highshelf filter
+                                        </li>
+                                        <li>
+                                            Peaking filter
+                                        </li>
+                                        <li>
+                                            Notch filter
+                                        </li>
+                                        <li>
+                                            Allpass filter
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    Effects
+                                    <ul>
+                                        <li>
+                                            Amplify waveform
+                                        </li>
+                                        <li>
+                                            Fade in and out (select the point to start and the duration of the effect and then apply)
+                                        </li>
+                                        <li>
+                                            Bitcrush effect
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Start editing!</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div id="waveform"></div>
+        <div id="wave-timeline"></div>
+
         <div id="accordion1">
             <div class="card m-2">
                 <div class="card-header" id="headingOne"  data-toggle="collapse" data-target="#collapseActions" aria-expanded="true" aria-controls="collapseActions">
@@ -186,10 +214,6 @@
                 </div>
                 <div id="collapseActions" class="collapse" aria-labelledby="headingOne" data-parent="#accordion1">
                     <div class="row p-1 justify-content-center">
-                        <button class="btn btn-success m-1" id="get_selection_btn" disabled>Get Selected Region</button>
-                        <button class="btn btn-success m-1" id="delete_region" disabled>Delete Region</button>
-                        <button class="btn btn-success m-1" id="empty_region" disabled>Clear Region</button>
-                        <button class="btn btn-success m-1" id="undo_get_selection_btn">Get Original Sample</button>
                         <button class="btn btn-success m-1" id="reset_filters">Reset Filters</button>
                         <button class="btn btn-success m-1" id="reverse">Reverse</button>
                     </div>
@@ -201,6 +225,7 @@
                 </div>
             </div>
         </div>
+
         <div id="accordion2">
             <div class="card m-2">
                 <div class="card-header" id="headingTwo"   data-toggle="collapse" data-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
@@ -274,6 +299,7 @@
                 </div>
             </div>
         </div>
+        
         <div id="accordion3">
             <div class="card m-2">
                 <div class="card-header" id="headingThree" data-toggle="collapse" data-target="#collapseEffects" aria-expanded="true" aria-controls="collapseEffects">
@@ -328,7 +354,17 @@
                 </div>
             </div>
         </div>
+
+        <!-- Main JS file -->
         <script src="js/app.js"></script>
+        <script type="text/javascript">
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip({
+                    trigger: 'hover'
+                })
+            })
+        </script>
 
     </body>
+    
 </html>
