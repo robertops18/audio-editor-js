@@ -40,8 +40,8 @@
         </div>
 
         <!-- controls -->
-        <div class="row pl-2" style="align-items: baseline;">
-            <div class="border rounded m-2" id="play_pause">
+        <div class="row pl-3" style="align-items: baseline;">
+            <div class="border rounded m-1" id="play_pause">
                     <button class="btn btn-primary m-1" onclick="wavesurfer.skipBackward()" data-toggle="tooltip" data-placement="bottom" title="Back 2 seconds">
                         <i class="fa fa-step-backward"></i>
                     </button>
@@ -50,11 +50,14 @@
                         /
                         <i class="fas fa-pause" ></i>
                     </button>
+                    <button class="btn btn-primary m-1" onclick="wavesurfer.stop()" data-toggle="tooltip" data-placement="bottom" title="Stop">
+                        <i class="fa fa-stop"></i>
+                    </button>
                     <button class="btn btn-primary m-1" onclick="wavesurfer.skipForward()" data-toggle="tooltip" data-placement="bottom" title="Advance 2 seconds">
                         <i class="fa fa-step-forward"></i>
                     </button>
                 </div>
-            <div class="border rounded m-2" id="undo_redo">
+            <div class="border rounded m-1" id="undo_redo">
                 <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Undo" style="display: inline-block;">
                     <button class="btn btn-success m-1" id="undo" disabled style="pointer-events: none;">
                         <i class="fa fa-undo"></i>
@@ -82,7 +85,7 @@
                     <i class="fa fa-search-minus"></i>
                 </button>
             </div>
-            <div class="border rounded m-2" id="actions">
+            <div class="border rounded m-1" id="actions">
                 <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Get selected region" style="display: inline-block;">
                     <button class="btn btn-success m-1" id="get_selection_btn" disabled style="pointer-events: none;">
                         <i class="fa fa-search"></i>
@@ -91,12 +94,19 @@
                 <button class="btn btn-success m-1" id="undo_get_selection_btn" data-toggle="tooltip" data-placement="bottom" title="Get original sample">
                     <i class="fa fa-file-audio"></i>
                 </button>
+                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Change playback rate" style="display: inline-block;">
+                    <button class="btn btn-success m-1" id="playback_rate_btn" data-toggle="modal" data-target="#playbackRateModal">
+                        <i class="fa fa-tachometer-alt"></i>
+                    </button>
+                </div>
                 <button class="btn btn-success m-1" id="reverse" data-toggle="tooltip" data-placement="bottom" title="Reverse">
                     <i class="fa fa-history"></i>
                 </button>
+                <!--
                 <button class="btn btn-success m-1" id="reset_filters" data-toggle="tooltip" data-placement="bottom" title="Reset filters">
                     <i class="fa fa-filter"></i>
                 </button>
+                -->
                 <button class="btn btn-success m-1" id="export" data-toggle="tooltip" data-placement="bottom" title="Download edited sample">
                     <i class="fa fa-download"></i>
                 </button>
@@ -211,136 +221,94 @@
                             </div>
                         </div>
                     </div>
+            </div>
+            <div class="modal fade" id="playbackRateModal" tabindex="-1" role="dialog" aria-labelledby="playbackRateModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="playbackRateModalLabel">Change playback rate</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="rateRadios" id="halfRatio" value="0.5" checked>
+                        <label class="form-check-label ratio-option" for="halfRatio">
+                        0.5
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="rateRadios" id="normalRatio" value="1">
+                        <label class="form-check-label ratio-option" for="normalRatio">
+                        1
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="rateRadios" id="doubleRatio" value="2">
+                        <label class="form-check-label ratio-option" for="doubleRatio">
+                        2
+                        </label>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="change_rate_btn" data-dismiss="modal">Change rate</button>
+                  </div>
                 </div>
+              </div>
+            </div>
         </div>
 
         <div id="waveform"></div>
         <div id="wave-timeline"></div>
 
-        <div id="accordion2">
-            <div class="card m-2">
-                <div class="card-header" id="headingTwo"   data-toggle="collapse" data-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
-                    <h5 class="mb-0">
-                        Filters
-                        <i class="fas fa-caret-down"></i>
-                    </h5>
+        <div class="row p-2">
+            <div class="border rounded m-1 col-sm" id="filters_pannel">
+                <div class="row">
+                    <h2 class="pt-2 pl-3">Filters</h2>
                 </div>
-                <div id="collapseFilters" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion2">
-                    <div class="container">
-                        <div class="row m-2">
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="lowpass_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="highpass_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="bandpass_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="lowshelf_knob"></div>
-                            </div>
-
-                            <div class="w-100"></div>
-
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowpass_filter_btn">Apply Lowpass filter</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="highpass_filter_btn">Apply Highpass filter</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="bandpass_filter_btn">Apply Bandpass filter</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="lowshelf_filter_btn">Apply Lowshelf filter</button>
-                            </div>
-
-                            <div class="w-100"></div>
-
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="highshelf_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="peaking_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="notch_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="allpass_knob"></div>
-                            </div>
-
-                            <div class="w-100"></div>
-
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="highshelf_filter_btn">Apply Highshelf filter</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="peaking_filter_btn">Apply Peaking filter</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="notch_filter_btn">Apply Notch<br>filter</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="allpass_filter_btn">Apply Allpass filter</button>
-                            </div>
+                <div class="row">
+                    <div class="col-sm text-center align-self-center pl-5">
+                        <div class="row pb-2 justify-content-center">
+                            <select class="custom-select" id="filter_select" onchange="filters_knob.setValue(0);">
+                                <option selected>Select one filter...</option>
+                                <option value="lowpass">Lowpass filter</option>
+                                <option value="highpass">Highpass filter</option>
+                                <option value="bandpass">Bandpass filter</option>
+                                <option value="lowshelf">Lowshelf filter</option>
+                                <option value="highshelf">Highshelf filter</option>
+                                <option value="peaking">Peaking filter</option>
+                                <option value="notch">Notch filter</option>
+                                <option value="allpass">Allpass filter</option>
+                            </select>
                         </div>
+                        <div class="row justify-content-center">
+                            <button class="btn btn-success" id="reset_filters">Reset filters</button>
+                        </div>
+                    </div>
+                    <div class="col-sm text-center">
+                        <div id="filters_knob"></div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div id="accordion3">
-            <div class="card m-2">
-                <div class="card-header" id="headingThree" data-toggle="collapse" data-target="#collapseEffects" aria-expanded="true" aria-controls="collapseEffects">
-                    <h5 class="mb-0">
-                        Effects
-                        <i class="fas fa-caret-down"></i>
-                    </h5>
+            <div class="border rounded m-1 col-sm" id="effects_pannel">
+                <div class="row">
+                    <h2 class="pt-2 pl-3">Effects</h2>
                 </div>
-                <div id="collapseEffects" class="collapse" aria-labelledby="headingThree" data-parent="#accordion3">
-                    <div class="container">
-                        <div class="row mt-2 mb-2">
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="amplify_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="fade_in_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="fade_out_knob"></div>
-                            </div>
-                            <div class="col-3 text-center">
-                                <div class="m-1" id="bitcrush_knob"></div>
-                            </div>
-
-                            <div class="w-100"></div>
-
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="amplify_btn">Amplify</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="fade_in">Fade in</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="fade_out">Fade out</button>
-                            </div>
-                            <div class="col-3 text-center">
-                                <button class="btn btn-primary btn-sm filter-buttons m-1" id="bitcrush">Bitcrush effect</button>
-                            </div>
-    <!--
-                            <div class="w-100"></div>
-
-                            <div class="col-12 text-center">
-                                <button class="btn btn-success m-1" id="init_pitch_shifter">Init Pitch Shifter</button>
-                            </div>
-                            <div class="col-12 text-center">
-                                <input type="range" autofocus="true" min="0.1" max="2.0" name="pitchSlider" value="1.0" id="pitchSlider" step="0.01" list="pitchrange">
-                            </div>
-    -->
-
+                <div class="row">
+                    <div class="col-sm text-center align-self-center pl-5">
+                        <div class="row pb-2 justify-content-center">
+                            <select class="custom-select" id="effects_select" onchange="chooseKnobConfig(value)">
+                                <option selected>Select one effect...</option>
+                                <option value="amplify">Amplify</option>
+                                <option value="fadein">Fade in</option>
+                                <option value="fadeout">Fade out</option>
+                            </select>
                         </div>
+                    </div>
+                    <div class="col-sm text-center">
+                        <div id="effects_knob"></div>
                     </div>
                 </div>
             </div>

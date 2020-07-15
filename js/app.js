@@ -19,28 +19,31 @@ document.body.onkeydown = function(event) {
         keyDown(event);
     }
 };
-
 // Query Selectors
 initQuerySelectors();
 
 // Wavesurfer events
 initWavesurferEvents();
 
-// Knobs filters
-var lowpass_knob = createKnob("lowpass_knob", 0, 500, 'Hz');
-var highpass_knob = createKnob("highpass_knob", 0, 500, 'Hz');
-var bandpass_knob = createKnob("bandpass_knob", 0, 500, 'Hz');
-var lowshelf_knob = createKnob("lowshelf_knob", 0, 500, 'Hz');
-var highshelf_knob = createKnob("highshelf_knob", 0, 500, 'Hz');
-var peaking_knob = createKnob("peaking_knob", 0, 500, 'Hz');
-var notch_knob = createKnob("notch_knob", 0, 500, 'Hz');
-var allpass_knob = createKnob("allpass_knob", 0, 500, 'Hz');
+//Filters and effects knob
+var filters_knob = createKnob('filters_knob', 0, 500, 'Hz');
+var changeListenerFilters = function(knob, value) {
+    var filterType = $( "#filter_select" ).val();
+    if (filterType !== 'Select one filter...' && value !== 0) {
+        toUndo('filter', {filterType: filterType, frequency: filters_knob.getValue()});
+        applyFilter(filterType, value);
+    }
+}
+filters_knob.addListener(changeListenerFilters);
 
-//Knobs effects
-var amplify_knob = createKnob("amplify_knob", 1, 5,'', 1);
-var fade_in_knob = createKnob("fade_in_knob", 1, 10, 'Seconds', 1);
-var fade_out_knob = createKnob("fade_out_knob", 1, 10, 'Seconds', 1);
-var bitcrush_knob = createKnob("bitcrush_knob", 4, 16, 'Bits',4);
+var effects_knob = createKnob('effects_knob', 0, 5, '');
+var changeListenerEffects = function(knob, value) {
+    var effect = $( "#effects_select" ).val();
+    if (effect !== 'Select one effect...' && value !== 0) {
+        applyEffect(effect, value);
+    }
+}
+effects_knob.addListener(changeListenerEffects);
 
 /*
 // Pitch slider
@@ -92,15 +95,6 @@ function initQuerySelectors() {
         toUndo('buffer', wavesurfer.backend.buffer);
         reverse();
     }
-    document.querySelector('#fade_in').onclick = function () {
-        fadeIn(fade_in_knob.getValue());
-    }
-    document.querySelector('#fade_out').onclick = function () {
-        fadeOut(fade_out_knob.getValue());
-    }
-    document.querySelector('#amplify_btn').onclick = function () {
-        amplify(amplify_knob.getValue());
-    }
     document.querySelector('#export').onclick = function () {
         exportBufferToFile();
     }
@@ -113,51 +107,15 @@ function initQuerySelectors() {
     document.querySelector('#redo').onclick = function () {
         redo();
     }
-    document.querySelector('#bitcrush').onclick = function () {
-        applyBitcrushEffect(bitcrush_knob.getValue());
+    document.querySelector('#change_rate_btn').onclick = function () {
+        var rateValue = Number($("input[name='rateRadios']:checked").val());
+        wavesurfer.setPlaybackRate(rateValue)
     }
     /*
     document.querySelector('#init_pitch_shifter').onclick = function () {
         initPitchShifter();
     }
      */
-    
-    querySelectorFilters();
-}
-
-function querySelectorFilters() {
-    document.querySelector('#lowpass_filter_btn').onclick = function () {
-        toUndo('filter', {filterType: 'lowpass', frequency: lowpass_knob.getValue()});
-		applyFilter('lowpass', lowpass_knob.getValue());
-	}
-	document.querySelector('#highpass_filter_btn').onclick = function () {
-        toUndo('filter', {filterType: 'highpass', frequency: highpass_knob.getValue()});
-		applyFilter('highpass', highpass_knob.getValue());
-	}
-	document.querySelector('#bandpass_filter_btn').onclick = function () {
-        toUndo('filter', {filterType: 'bandpass', frequency: bandpass_knob.getValue()});
-		applyFilter('bandpass', bandpass_knob.getValue());
-	}
-	document.querySelector('#lowshelf_filter_btn').onclick = function () {
-        toUndo('filter', {filterType: 'lowshelf', frequency: lowshelf_knob.getValue()});
-		applyFilter('lowshelf', lowshelf_knob.getValue());
-	}
-	document.querySelector('#highshelf_filter_btn').onclick = function () {
-        toUndo('filter', {filterType: 'highshelf', frequency: highshelf_knob.getValue()});
-		applyFilter('highshelf', highshelf_knob.getValue());
-	}
-	document.querySelector('#peaking_filter_btn').onclick = function () {
-        toUndo('filter', {filterType: 'peaking', frequency: peaking_knob.getValue()});
-		applyFilter('peaking', peaking_knob.getValue());
-	}
-	document.querySelector('#notch_filter_btn').onclick = function () {
-        toUndo('filter', {filterType: 'notch', frequency: notch_knob.getValue()});
-		applyFilter('notch', notch_knob.getValue());
-	}
-	document.querySelector('#allpass_filter_btn').onclick = function () {
-        toUndo('filter', {filterType: 'allpass', frequency: allpass_knob.getValue()});
-		applyFilter('allpass', allpass_knob.getValue());
-	}
 }
 
 function initWavesurferEvents() {
@@ -172,10 +130,11 @@ function initWavesurferEvents() {
 		deletePreviousRegion();
 	});
 
-    wavesurfer.on('ready', function() {
-        zoomValueInit = 900 / wavesurfer.getDuration();
-        zoomValue = zoomValueInit
+	wavesurfer.on('ready', function() {
+	    zoomValueInit = 900 / wavesurfer.getDuration();
+	    zoomValue = zoomValueInit
     })
+
 	/*
 	wavesurfer.on('finish', function() {
 	    print('FINISH!')
@@ -621,6 +580,22 @@ function applyFilter(filterType, frequency, fromCancel = false) {
     }
 }
 
+function applyEffect(effect, value) {
+    switch (effect) {
+        case 'amplify':
+            amplify(value);
+            break;
+        case 'fadein':
+            fadeIn(value);
+            break;
+        case 'fadeout':
+            fadeOut(value);
+            break;
+        default:
+            break;
+    }
+}
+
 function createKnob(divID, valMin, valMax, label, defaultValue = 0) {
 	var myKnob = pureknob.createKnob(134, 134);
 	myKnob.setProperty('valMin', valMin);
@@ -637,32 +612,37 @@ function createKnob(divID, valMin, valMax, label, defaultValue = 0) {
 	return myKnob;
 }
 
+function changeKnobValues(knob, valMin, valMax, label, defaultValue) {
+    knob.setProperty('valMin', valMin);
+    knob.setProperty('valMax', valMax);
+    knob.setProperty('label', label);
+    knob.setProperty('val', defaultValue);
+}
+
+function chooseKnobConfig(value) {
+    switch (value) {
+        case 'amplify':
+            changeKnobValues(effects_knob, 1, 5, '', 1);
+            effects_knob.setValue(wavesurfer.backend.gainNode.gain.value);
+            break;
+        case 'fadein':
+            changeKnobValues(effects_knob, 1, 10, 'Seconds', 1);
+            break;
+        case 'fadeout':
+            changeKnobValues(effects_knob, 1, 10, 'Seconds', 1);
+            break;
+        default:
+            break;
+    }
+}
+
 function cancelFilter() {
     applyFilter('allpass', 0, true);
 }
 
 function resetFilters() {
-	lowpass_knob.setValue(0);
-	highpass_knob.setValue(0);
-	bandpass_knob.setValue(0);
-	lowshelf_knob.setValue(0);
-	highshelf_knob.setValue(0);
-	peaking_knob.setValue(0);
-	notch_knob.setValue(0);
-    allpass_knob.setValue(0);
-
-    amplify_knob.setValue(1);
-    
+	filters_knob.setValue(0);
     applyFilter('allpass', 0);
-    amplify(1);
-}
-
-// Bitcrush effect
-
-function applyBitcrushEffect(bits) {
-    var bitcrushNode = getBitCrushNode(wavesurfer.backend.ac, bits);
-    wavesurfer.backend.source.connect(bitcrushNode);
-    bitcrushNode.connect(wavesurfer.backend.ac.destination);
 }
 
 // Key events
