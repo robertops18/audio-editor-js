@@ -58,12 +58,12 @@
                     </button>
                 </div>
             <div class="border rounded m-1" id="undo_redo">
-                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Undo" style="display: inline-block;">
+                <div id="undo_tooltip" class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Undo" style="display: inline-block;">
                     <button class="btn btn-success m-1" id="undo" disabled style="pointer-events: none;">
                         <i class="fa fa-undo"></i>
                     </button>
                 </div>
-                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Redo" style="display: inline-block;">
+                <div id="redo_tooltip" class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Redo" style="display: inline-block;">
                     <button class="btn btn-success m-1" id="redo" disabled style="pointer-events: none;">
                         <i class="fa fa-redo"></i>
                     </button>
@@ -269,26 +269,30 @@
                     <h2 class="pt-2 pl-3">Filters</h2>
                 </div>
                 <div class="row">
-                    <div class="col-sm text-center align-self-center pl-5">
-                        <div class="row pb-2 justify-content-center">
-                            <select class="custom-select" id="filter_select" onchange="filters_knob.setValue(0);">
-                                <option selected>Select one filter...</option>
-                                <option value="lowpass">Lowpass filter</option>
-                                <option value="highpass">Highpass filter</option>
-                                <option value="bandpass">Bandpass filter</option>
-                                <option value="lowshelf">Lowshelf filter</option>
-                                <option value="highshelf">Highshelf filter</option>
-                                <option value="peaking">Peaking filter</option>
-                                <option value="notch">Notch filter</option>
-                                <option value="allpass">Allpass filter</option>
-                            </select>
+                    <div class="m-1 col-sm">
+                        <div class="row justify-content-center">
+                            <h4>Lowpass</h4>
                         </div>
                         <div class="row justify-content-center">
-                            <button class="btn btn-success" id="reset_filters">Reset filters</button>
+                            <div id="lowpass_knob"></div>
                         </div>
                     </div>
-                    <div class="col-sm text-center">
-                        <div id="filters_knob"></div>
+                    <div class="m-1 col-sm">
+                        <div class="row justify-content-center">
+                            <h4>Bandpass</h4>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div id="bandpass_freq_knob"></div>
+                            <div id="bandpass_q_knob"></div>
+                        </div>
+                    </div>
+                    <div class="m-1 col-sm">
+                        <div class="row justify-content-center">
+                            <h4>Highpass</h4>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div id="highpass_knob"></div>
+                        </div>
                     </div>
                 </div>
             </div>
