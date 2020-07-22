@@ -42,18 +42,18 @@
         <!-- controls -->
         <div class="row pl-3" style="align-items: baseline;">
             <div class="border rounded m-1" id="play_pause">
-                    <button class="btn btn-primary m-1" onclick="wavesurfer.skipBackward()" data-toggle="tooltip" data-placement="bottom" title="Back 2 seconds">
+                    <button class="btn btn-primary freesound-color-btn m-1" onclick="wavesurfer.skipBackward()" data-toggle="tooltip" data-placement="bottom" title="Back 2 seconds">
                         <i class="fa fa-step-backward"></i>
                     </button>
-                    <button type="button" class="btn btn-primary m-1" id="play_btn" data-toggle="tooltip" data-placement="bottom" title="Play/Pause">
+                    <button type="button" class="btn btn-primary freesound-color-btn m-1" id="play_btn" data-toggle="tooltip" data-placement="bottom" title="Play/Pause">
                         <i class="fas fa-play"></i>
                         /
                         <i class="fas fa-pause" ></i>
                     </button>
-                    <button class="btn btn-primary m-1" onclick="wavesurfer.stop()" data-toggle="tooltip" data-placement="bottom" title="Stop">
+                    <button class="btn btn-primary freesound-color-btn m-1" onclick="wavesurfer.stop()" data-toggle="tooltip" data-placement="bottom" title="Stop">
                         <i class="fa fa-stop"></i>
                     </button>
-                    <button class="btn btn-primary m-1" onclick="wavesurfer.skipForward()" data-toggle="tooltip" data-placement="bottom" title="Advance 2 seconds">
+                    <button class="btn btn-primary freesound-color-btn m-1" onclick="wavesurfer.skipForward()" data-toggle="tooltip" data-placement="bottom" title="Advance 2 seconds">
                         <i class="fa fa-step-forward"></i>
                     </button>
                 </div>
@@ -94,11 +94,6 @@
                 <button class="btn btn-success m-1" id="undo_get_selection_btn" data-toggle="tooltip" data-placement="bottom" title="Get original sample">
                     <i class="fa fa-file-audio"></i>
                 </button>
-                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Change playback rate" style="display: inline-block;">
-                    <button class="btn btn-success m-1" id="playback_rate_btn" data-toggle="modal" data-target="#playbackRateModal">
-                        <i class="fa fa-tachometer-alt"></i>
-                    </button>
-                </div>
                 <button class="btn btn-success m-1" id="reverse" data-toggle="tooltip" data-placement="bottom" title="Reverse">
                     <i class="fa fa-history"></i>
                 </button>
@@ -222,42 +217,6 @@
                         </div>
                     </div>
             </div>
-            <div class="modal fade" id="playbackRateModal" tabindex="-1" role="dialog" aria-labelledby="playbackRateModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="playbackRateModalLabel">Change playback rate</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="rateRadios" id="halfRatio" value="0.5" checked>
-                        <label class="form-check-label ratio-option" for="halfRatio">
-                        0.5
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="rateRadios" id="normalRatio" value="1">
-                        <label class="form-check-label ratio-option" for="normalRatio">
-                        1
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="rateRadios" id="doubleRatio" value="2">
-                        <label class="form-check-label ratio-option" for="doubleRatio">
-                        2
-                        </label>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="change_rate_btn" data-dismiss="modal">Change rate</button>
-                  </div>
-                </div>
-              </div>
-            </div>
         </div>
 
         <div id="waveform"></div>
@@ -271,7 +230,7 @@
                 <div class="row">
                     <div class="m-1 col-sm">
                         <div class="row justify-content-center">
-                            <h4>Lowpass</h4>
+                            <h4 class="knob-name">Lowpass</h4>
                         </div>
                         <div class="row justify-content-center">
                             <div id="lowpass_knob"></div>
@@ -279,7 +238,7 @@
                     </div>
                     <div class="m-1 col-sm">
                         <div class="row justify-content-center">
-                            <h4>Bandpass</h4>
+                            <h4 class="knob-name">Bandpass</h4>
                         </div>
                         <div class="row justify-content-center">
                             <div id="bandpass_freq_knob"></div>
@@ -288,7 +247,7 @@
                     </div>
                     <div class="m-1 col-sm">
                         <div class="row justify-content-center">
-                            <h4>Highpass</h4>
+                            <h4 class="knob-name">Highpass</h4>
                         </div>
                         <div class="row justify-content-center">
                             <div id="highpass_knob"></div>
@@ -301,18 +260,30 @@
                     <h2 class="pt-2 pl-3">Effects</h2>
                 </div>
                 <div class="row">
-                    <div class="col-sm text-center align-self-center pl-5">
-                        <div class="row pb-2 justify-content-center">
-                            <select class="custom-select" id="effects_select" onchange="chooseKnobConfig(value)">
-                                <option selected>Select one effect...</option>
-                                <option value="amplify">Amplify</option>
-                                <option value="fadein">Fade in</option>
-                                <option value="fadeout">Fade out</option>
-                            </select>
+                    <div class="m-1 col-sm">
+                        <div class="row justify-content-center">
+                            <h4 class="knob-name">Amplify</h4>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div id="amplify_knob"></div>
                         </div>
                     </div>
-                    <div class="col-sm text-center">
-                        <div id="effects_knob"></div>
+                    <div class="m-1 col-sm">
+                        <div class="row justify-content-center">
+                            <h4 class="knob-name">Fade In/Out</h4>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div id="fade_in_knob"></div>
+                            <div id="fade_out_knob"></div>
+                        </div>
+                    </div>
+                    <div class="m-1 col-sm">
+                        <div class="row justify-content-center">
+                            <h4 class="knob-name">Playback rate</h4>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div id="rate_knob"></div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -344,7 +344,7 @@ function PureKnob() {
 			/*
 			 * Notify listeners about value changes.
 			 */
-			'_notifyUpdate': function() {
+			'_notifyUpdate': function(event = '') {
 				const properties = this._properties;
 				const value = properties.val;
 				const listeners = this._listeners;
@@ -360,7 +360,11 @@ function PureKnob() {
 					 * Call listener, if it exists.
 					 */
 					if (listener !== null) {
-						listener(this, value);
+						if (event !== '') {
+							listener(this, value, event);
+						} else {
+							listener(this, value);
+						}
 					}
 
 				}
@@ -377,6 +381,7 @@ function PureKnob() {
 				'colorBG': '#181818',
 				'colorFG': '#ff8800',
 				'colorLabel': '#ffffff',
+				'decimal': false,
 				'fnStringToValue': function(string) { return parseInt(string); },
 				'fnValueToString': function(value) { return value.toString(); },
 				'label': null,
@@ -410,12 +415,12 @@ function PureKnob() {
 			/*
 			 * Commit value, indicating that it is no longer temporary.
 			 */
-			'commit': function() {
+			'commit': function(event = '') {
 				const properties = this._properties;
 				const value = properties.val;
 				this._previousVal = value;
 				this.redraw();
-				this._notifyUpdate();
+				this._notifyUpdate(event);
 			},
 
 			/*
@@ -569,9 +574,9 @@ function PureKnob() {
 			/*
 			 * Sets the value of this knob.
 			 */
-			'setValue': function(value) {
+			'setValue': function(value, event = '') {
 				this.setValueFloating(value);
-				this.commit();
+				this.commit(event);
 			},
 
 			/*
@@ -581,6 +586,7 @@ function PureKnob() {
 				const properties = this._properties;
 				const valMin = properties.valMin;
 				const valMax = properties.valMax;
+				const decimal = properties.decimal;
 
 				/*
 				 * Clamp the actual value into the [valMin; valMax] range.
@@ -591,7 +597,7 @@ function PureKnob() {
 					value = valMax;
 				}
 
-				value = Math.round(value);
+				value = decimal ? Math.round(value * 10) / 10 : Math.round(value);
 				this.setProperty('val', value);
 			}
 
@@ -807,6 +813,7 @@ function PureKnob() {
 					e.preventDefault();
 					const val = mouseEventToValue(e, properties);
 					knob.setValueFloating(val);
+					knob.setValue(val);
 				}
 
 			}
@@ -832,7 +839,7 @@ function PureKnob() {
 				if (!readonly) {
 					e.preventDefault();
 					const val = mouseEventToValue(e, properties);
-					knob.setValue(val);
+					knob.setValue(val, 'mouseUp');
 				}
 
 			}
@@ -1092,7 +1099,7 @@ function PureKnob() {
 					 * Check if input is a valid number.
 					 */
 					if (valid) {
-						knob.setValue(val);
+						knob.setValue(val, 'enter');
 					}
 
 				}
