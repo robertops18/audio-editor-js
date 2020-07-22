@@ -302,6 +302,7 @@ function undo() {
             case 'buffer':
                 toRedo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: undoAction.action.tooltipTextUndo, tooltipTextRedo: undoAction.action.tooltipTextRedo});
                 var previousBuffer = undoAction.action.buffer;
+                console.log(previousBuffer)
                 wavesurfer.empty()
                 wavesurfer.loadDecodedBuffer(previousBuffer);
                 break;
@@ -768,7 +769,7 @@ function keyDown(event) {
     switch (event.keyCode) {
         case 8: // delete
             if (numOfRegions() > 0) {
-                toUndo('buffer', wavesurfer.backend.buffer);
+                toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Delete Region', tooltipTextRedo: 'Redo Delete Region'});
                 deleteRegion();
             }
             break;
