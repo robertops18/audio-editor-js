@@ -813,7 +813,12 @@ function PureKnob() {
 					e.preventDefault();
 					const val = mouseEventToValue(e, properties);
 					knob.setValueFloating(val);
-					knob.setValue(val);
+
+					let timeout = knob._timeout;
+					window.clearTimeout(timeout);
+					timeout = window.setTimeout(knob.setValue(val), 500);
+					knob._timeout = timeout;
+					//knob.setValue(val);
 				}
 
 			}
