@@ -78,19 +78,21 @@
                         <i class="fa fa-trash-alt"></i>
                     </button>
                 </div>
+            </div>
+            <div class="border rounded m-1" id="zoom">
                 <button class="btn btn-success m-1" id="zoom_in" data-toggle="tooltip" data-placement="bottom" title="Zoom in">
                     <i class="fa fa-search-plus"></i>
                 </button>
                 <button class="btn btn-success m-1" id="zoom_out" data-toggle="tooltip" data-placement="bottom" title="Zoom out">
                     <i class="fa fa-search-minus"></i>
                 </button>
-            </div>
-            <div class="border rounded m-1" id="actions">
                 <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Get selected region" style="display: inline-block;">
                     <button class="btn btn-success m-1" id="get_selection_btn" disabled style="pointer-events: none;">
                         <i class="fa fa-search"></i>
                     </button>
                 </div>
+            </div>
+            <div class="border rounded m-1" id="actions">
                 <button class="btn btn-success m-1" id="undo_get_selection_btn" data-toggle="tooltip" data-placement="bottom" title="Get original sample">
                     <i class="fa fa-file-audio"></i>
                 </button>
@@ -225,7 +227,7 @@
         <div class="row p-2">
             <div class="border rounded m-1 col-sm" id="filters_pannel">
                 <div class="row">
-                    <h2 class="pt-2 pl-3">Filters</h2>
+                    <h2 class="pt-2 pl-3">EQ</h2>
                 </div>
                 <div class="row">
                     <div class="m-1 col-sm">
@@ -262,7 +264,7 @@
                 <div class="row">
                     <div class="m-1 col-sm">
                         <div class="row justify-content-center">
-                            <h4 class="knob-name">Amplify</h4>
+                            <h4 class="knob-name">Gain</h4>
                         </div>
                         <div class="row justify-content-center">
                             <div id="amplify_knob"></div>

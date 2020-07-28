@@ -3,7 +3,7 @@ var wavesurfer = createWavesurfer(sound);
 
 var zoomValueInit = 0
 var zoomValue = 0
-var zoomRatio = 5
+var zoomRatio = 10
 
 var pitchShifter;
 
@@ -26,12 +26,12 @@ initQuerySelectors();
 initWavesurferEvents();
 
 //Filters and effects knob
-var lowpass_knob = createKnob('lowpass_knob', 0, 500, 'Hz', false);
-var bandpass_freq_knob = createKnob('bandpass_freq_knob', 0, 500, 'Hz', false);
-var bandpass_q_knob = createKnob('bandpass_q_knob', 1, 30, 'Q', false,1);
-var highpass_knob = createKnob('highpass_knob', 0, 500, 'Hz', false);
+var lowpass_knob = createKnob('lowpass_knob', 0, 20000, 'Hz', true);
+var bandpass_freq_knob = createKnob('bandpass_freq_knob', 0, 20000, 'Hz', true);
+var bandpass_q_knob = createKnob('bandpass_q_knob', 1, 30, 'Q', true,1);
+var highpass_knob = createKnob('highpass_knob', 0, 20000, 'Hz', true);
 
-var amplify_knob = createKnob('amplify_knob', 1, 5, '', false,1);
+var amplify_knob = createKnob('amplify_knob', -20, 20, 'dB', true, 0);
 var fade_in_knob = createKnob('fade_in_knob', 0, 10, 'In (s)', false);
 var fade_out_knob = createKnob('fade_out_knob', 0, 10, 'Out (s)', false);
 var rate_knob = createKnob('rate_knob', 0.2, 3, '', true, 1);
@@ -56,14 +56,10 @@ var appliedFilters = []
 // Initialization functions 
 function initQuerySelectors() {
     document.querySelector('#zoom_in').onclick = function () {
-        zoomValue += zoomRatio
-        wavesurfer.zoom(zoomValue);
+        zoomIn();
     }
     document.querySelector('#zoom_out').onclick = function () {
-        if (zoomValue > zoomValueInit) {
-            zoomValue -= zoomRatio
-            wavesurfer.zoom(zoomValue);
-        }
+        zoomOut();
     }
     document.querySelector('#get_selection_btn').onclick = function () {
         toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Get Selected Region', tooltipTextRedo: 'Redo Get Selected Region'});
@@ -137,6 +133,7 @@ function initWavesurferEvents() {
 }
 
 function initKnobListeners() {
+    var lowpassFilter, highpassFilter, bandpassFilterFreq, bandpassFilterQ;
     var changeListenerLowpass = function(knob, value, mouseUp) {
         if (value !== 0) {
             if (mouseUp) {
@@ -149,7 +146,11 @@ function initKnobListeners() {
                 });
                 applyFilter('lowpass', value, 1);
             } else {
-                applyFilter('lowpass', value, 1, true);
+                if (lowpassFilter) {
+                    lowpassFilter.frequency.value = value;
+                } else {
+                    lowpassFilter = applyFilter('lowpass', value, 1, true);
+                }
             }
         }
     }
@@ -167,7 +168,11 @@ function initKnobListeners() {
                 });
                 applyFilter('highpass', value, 1);
             } else {
-                applyFilter('highpass', value, 1, true);
+                if (highpassFilter) {
+                    highpassFilter.frequency.value = value;
+                } else {
+                    highpassFilter = applyFilter('highpass', value, 1, true);
+                }
             }
         }
     }
@@ -185,7 +190,11 @@ function initKnobListeners() {
                 });
                 applyFilter('bandpass', value, bandpass_q_knob.getValue());
             } else {
-                applyFilter('bandpass', value, bandpass_q_knob.getValue(), true);
+                if (bandpassFilterFreq) {
+                    bandpassFilterFreq.frequency.value = value;
+                } else {
+                    bandpassFilterFreq = applyFilter('bandpass', value, bandpass_q_knob.getValue(), true);
+                }
             }
         }
     }
@@ -203,7 +212,11 @@ function initKnobListeners() {
                 });
                 applyFilter('bandpass', bandpass_freq_knob.getValue(), value);
             } else {
-                applyFilter('bandpass', bandpass_freq_knob.getValue(), value, true);
+                if (bandpassFilterQ) {
+                    bandpassFilterQ.Q.value = value;
+                } else {
+                    bandpassFilterQ = applyFilter('bandpass', bandpass_freq_knob.getValue(), value, true);
+                }
             }
         }
     }
@@ -290,6 +303,18 @@ function loadSong() {
     var sample = document.getElementById("sampleSelect").value;
     wavesurfer.empty();
     wavesurfer.load(sample);
+}
+
+function zoomIn() {
+    zoomValue += zoomRatio
+    wavesurfer.zoom(zoomValue);
+}
+
+function zoomOut() {
+    if (zoomValue > zoomValueInit) {
+        zoomValue -= zoomRatio
+        wavesurfer.zoom(zoomValue);
+    }
 }
 
 // Print aux function
@@ -500,10 +525,12 @@ function fadeOut(duration) {
 }
 
 function amplify(value) {
-    wavesurfer.backend.gainNode.gain.value = value;
+    wavesurfer.backend.gainNode.gain.value = Math.pow(10, (value / 20));
+    /*
     wavesurfer.params.barHeight = value;
     wavesurfer.empty();
     wavesurfer.loadDecodedBuffer(wavesurfer.backend.buffer);
+    */
 }
 
 // Region related functions
@@ -690,22 +717,7 @@ function applyFilter(filterType, frequency, Q, fromCancel = false) {
             Q: Q
         });
     }
-}
-
-function applyEffect(effect, value) {
-    switch (effect) {
-        case 'amplify':
-            amplify(value);
-            break;
-        case 'fadein':
-            fadeIn(value);
-            break;
-        case 'fadeout':
-            fadeOut(value);
-            break;
-        default:
-            break;
-    }
+    return filter;
 }
 
 function createKnob(divID, valMin, valMax, label, decimal, defaultValue = 0) {
@@ -719,34 +731,11 @@ function createKnob(divID, valMin, valMax, label, decimal, defaultValue = 0) {
     myKnob.setProperty('label', label);
     myKnob.setProperty('colorLabel', '#AB4646');
     myKnob.setProperty('decimal', decimal);
+    myKnob.setProperty('textScale', 0.8);
 	var node = myKnob.node();
 	var elem = document.getElementById(divID);
 	elem.appendChild(node);
 	return myKnob;
-}
-
-function changeKnobValues(knob, valMin, valMax, label, defaultValue) {
-    knob.setProperty('valMin', valMin);
-    knob.setProperty('valMax', valMax);
-    knob.setProperty('label', label);
-    knob.setProperty('val', defaultValue);
-}
-
-function chooseKnobConfig(value) {
-    switch (value) {
-        case 'amplify':
-            changeKnobValues(effects_knob, 1, 5, '', 1);
-            effects_knob.setValue(wavesurfer.backend.gainNode.gain.value);
-            break;
-        case 'fadein':
-            changeKnobValues(effects_knob, 1, 10, 'Seconds', 1);
-            break;
-        case 'fadeout':
-            changeKnobValues(effects_knob, 1, 10, 'Seconds', 1);
-            break;
-        default:
-            break;
-    }
 }
 
 function cancelFilter() {
@@ -789,6 +778,12 @@ function keyDown(event) {
             } else if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
                 redo();
             }
+            break;
+        case 187:  //+
+            zoomIn();
+            break;
+        case 189: //-
+            zoomOut();
             break;
     }
 }
