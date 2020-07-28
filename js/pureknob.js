@@ -1096,7 +1096,7 @@ function PureKnob() {
 				if (kc === 13) {
 					const properties = knob._properties;
 					const value = input.value;
-					const stringToValue = properties.fnStringToValue;
+					const stringToValue = properties.decimal ? parseFloat : properties.fnStringToValue;
 					const val = stringToValue(value);
 					const valid = isFinite(val);
 
