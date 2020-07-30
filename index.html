@@ -17,6 +17,7 @@
         <script src="js/bitcrush.js" type="text/javascript"></script>
         <script src="js/smoothfade.js" type="text/javascript"></script>
         <script src="js/pitchshifter.js" type="text/javascript"></script>
+        <script src="js/soundtouch.js" type="text/javascript"></script>
 
         <script src="https://unpkg.com/wavesurfer.js"></script>
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.js"></script>
@@ -86,13 +87,18 @@
                 <button class="btn btn-success m-1" id="zoom_out" data-toggle="tooltip" data-placement="bottom" title="Zoom out">
                     <i class="fa fa-search-minus"></i>
                 </button>
+                <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Zoom to selected region" style="display: inline-block;">
+                    <button class="btn btn-success m-1" id="zoom_selected_btn" disabled style="pointer-events: none;">
+                        <i class="fa fa-search-location"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="border rounded m-1" id="actions">
                 <div class="tooltip-wrapper" data-toggle="tooltip" data-placement="bottom" title="Get selected region" style="display: inline-block;">
                     <button class="btn btn-success m-1" id="get_selection_btn" disabled style="pointer-events: none;">
                         <i class="fa fa-search"></i>
                     </button>
                 </div>
-            </div>
-            <div class="border rounded m-1" id="actions">
                 <button class="btn btn-success m-1" id="undo_get_selection_btn" data-toggle="tooltip" data-placement="bottom" title="Get original sample">
                     <i class="fa fa-file-audio"></i>
                 </button>
