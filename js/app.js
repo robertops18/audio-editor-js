@@ -163,7 +163,7 @@ function initWavesurferEvents() {
 }
 
 function initKnobListeners() {
-    var lowpassFilter, highpassFilter, bandpassFilterFreq, bandpassFilterQ;
+    var lowpassFilter = null, highpassFilter = null, bandpassFilter = null;
     var changeListenerLowpass = function(knob, value, mouseUp) {
         if (value !== 0) {
             if (mouseUp) {
@@ -174,12 +174,12 @@ function initKnobListeners() {
                     tooltipTextUndo: 'Undo Lowpass filter',
                     tooltipTextRedo: 'Redo Lowpass filter'
                 });
-                applyFilter('lowpass', value, 1);
+                lowpassFilter = applyFilter(lowpassFilter, 'lowpass', value, 1);
             } else {
                 if (lowpassFilter) {
                     lowpassFilter.frequency.value = value;
                 } else {
-                    lowpassFilter = applyFilter('lowpass', value, 1, true);
+                    lowpassFilter = applyFilter(lowpassFilter, 'lowpass', value, 1, true);
                 }
             }
         }
@@ -196,19 +196,19 @@ function initKnobListeners() {
                     tooltipTextUndo: 'Undo Highpass filter',
                     tooltipTextRedo: 'Redo Highpass filter'
                 });
-                applyFilter('highpass', value, 1);
+                highpassFilter = applyFilter(highpassFilter, 'highpass', value, 1);
             } else {
                 if (highpassFilter) {
                     highpassFilter.frequency.value = value;
                 } else {
-                    highpassFilter = applyFilter('highpass', value, 1, true);
+                    highpassFilter = applyFilter(highpassFilter, 'highpass', value, 1, true);
                 }
             }
         }
     }
     highpass_knob.addListener(changeListenerHighpass);
 
-    var changeListenerBandpassFreq = function(knob, value, mouseUp) {
+    var changeListenerBandpass = function(knob, value, mouseUp) {
         if (value !== 0) {
             if (mouseUp) {
                 toUndo('filter', {
@@ -218,17 +218,17 @@ function initKnobListeners() {
                     tooltipTextUndo: 'Undo Bandpass filter Freq',
                     tooltipTextRedo: 'Redo Bandpass filter Freq'
                 });
-                applyFilter('bandpass', value, bandpass_q_knob.getValue());
+                bandpassFilter = applyFilter(bandpassFilter, 'bandpass', value, bandpass_q_knob.getValue());
             } else {
-                if (bandpassFilterFreq) {
-                    bandpassFilterFreq.frequency.value = value;
+                if (bandpassFilter) {
+                    bandpassFilter.frequency.value = value;
                 } else {
-                    bandpassFilterFreq = applyFilter('bandpass', value, bandpass_q_knob.getValue(), true);
+                    bandpassFilter = applyFilter(bandpassFilter, 'bandpass', value, bandpass_q_knob.getValue(), true);
                 }
             }
         }
     }
-    bandpass_freq_knob.addListener(changeListenerBandpassFreq);
+    bandpass_freq_knob.addListener(changeListenerBandpass);
 
     var changeListenerBandpassQ = function(knob, value, mouseUp) {
         if (bandpass_freq_knob.getValue() > 0) {
@@ -240,12 +240,12 @@ function initKnobListeners() {
                     tooltipTextUndo: 'Undo Bandpass filter Q',
                     tooltipTextRedo: 'Redo Bandpass filter Q'
                 });
-                applyFilter('bandpass', bandpass_freq_knob.getValue(), value);
+                bandpassFilter = applyFilter(bandpassFilter, 'bandpass', bandpass_freq_knob.getValue(), value);
             } else {
-                if (bandpassFilterQ) {
-                    bandpassFilterQ.Q.value = value;
+                if (bandpassFilter) {
+                    bandpassFilter.Q.value = value;
                 } else {
-                    bandpassFilterQ = applyFilter('bandpass', bandpass_freq_knob.getValue(), value, true);
+                    bandpassFilter = applyFilter(bandpassFilter, 'bandpass', bandpass_freq_knob.getValue(), value, true);
                 }
             }
         }
@@ -742,12 +742,15 @@ function numOfRegions() {
 }
 
 // Filter related functions
-function applyFilter(filterType, frequency, Q, fromCancel = false) {
-    var filter = wavesurfer.backend.ac.createBiquadFilter();
-    filter.type = filterType;
+function applyFilter(filter, filterType, frequency, Q, fromCancel = false) {
+    if (!filter) {
+        filter = wavesurfer.backend.ac.createBiquadFilter();
+        filter.type = filterType;
+        wavesurfer.backend.setFilter(filter);
+    }
     filter.frequency.value = frequency;
     filter.Q.value = Q;
-    wavesurfer.backend.setFilter(filter);
+    
 
     if (!fromCancel) {
         appliedFilters.push({
@@ -778,12 +781,12 @@ function createKnob(divID, valMin, valMax, label, decimal, defaultValue = 0) {
 }
 
 function cancelFilter() {
-    applyFilter('allpass', 0, 1, true);
+    applyFilter(null, 'allpass', 0, 1, true);
 }
 
 function resetFilters() {
 	filters_knob.setValue(0);
-    applyFilter('allpass', 0, 1);
+    applyFilter(null, 'allpass', 0, 1);
 }
 
 function changePlaybackRate(value = null) {

@@ -5725,7 +5725,6 @@ function (_util$Observer) {
   }, {
     key: "setState",
     value: function setState(state) {
-        if (this.state) console.log(this.state.init);
       if (this.state !== this.states[state]) {
         this.state = this.states[state];
         this.state.init.call(this);
@@ -6160,17 +6159,6 @@ function (_util$Observer) {
       this.source.playbackRate.setValueAtTime(this.playbackRate, this.ac.currentTime);
       this.source.buffer = this.buffer;
       this.source.connect(this.analyser);
-      console.log(this.filters);
-      if (this.filters && this.filters.length > 0) {
-          console.log('in reduce')
-        this.filters.reduce(function (prev, curr) {
-            console.log('prev', prev);
-            console.log('curr', curr);
-            prev.connect(curr);
-            return curr;
-          }, this.analyser).connect(this.gainNode);
-      }
-      
     }
     /**
      * @private
