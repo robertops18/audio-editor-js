@@ -5566,7 +5566,7 @@ function (_util$Observer) {
     key: "getOfflineAudioContext",
     value: function getOfflineAudioContext(sampleRate) {
       if (!window.WaveSurferOfflineAudioContext) {
-        window.WaveSurferOfflineAudioContext = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 2, sampleRate);
+        window.WaveSurferOfflineAudioContext = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, 2, sampleRate);
       }
 
       return window.WaveSurferOfflineAudioContext;
@@ -5577,6 +5577,11 @@ function (_util$Observer) {
      * @param {WavesurferParams} params Wavesurfer parameters
      */
 
+  }, {
+      key: "setOfflineAudioContext",
+      value: function setOfflineAudioContext(length, sampleRate) {
+          this.offlineAc = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, length, sampleRate); 
+      }
   }]);
 
   function WebAudio(params) {
@@ -5707,6 +5712,7 @@ function (_util$Observer) {
   }, {
     key: "disconnectFilters",
     value: function disconnectFilters() {
+
       if (this.filters) {
         this.filters.forEach(function (filter) {
           filter && filter.disconnect();

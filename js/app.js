@@ -104,61 +104,6 @@ function initWavesurferEvents() {
 	wavesurfer.on('ready', function() {
         zoomValueInit = 900 / wavesurfer.getDuration();
         zoomValue = zoomValueInit
-
-        var st = new window.soundtouch.SoundTouch(
-            wavesurfer.backend.ac.sampleRate
-        );
-        var buffer = wavesurfer.backend.buffer;
-        var channels = buffer.numberOfChannels;
-        var l = buffer.getChannelData(0);
-        var r = channels > 1 ? buffer.getChannelData(1) : l;
-        var length = buffer.length;
-        var seekingPos = null;
-        var seekingDiff = 0;
-
-        var source = {
-            extract: function(target, numFrames, position) {
-                if (seekingPos != null) {
-                    seekingDiff = seekingPos - position;
-                    seekingPos = null;
-                }
-
-                position += seekingDiff;
-
-                for (var i = 0; i < numFrames; i++) {
-                    target[i * 2] = l[i + position];
-                    target[i * 2 + 1] = r[i + position];
-                }
-
-                return Math.min(numFrames, length - position);
-            }
-        };
-
-        var soundtouchNode;
-
-        wavesurfer.on('play', function() {
-            seekingPos = ~~(wavesurfer.backend.getPlayedPercents() * length);
-            st.tempo = wavesurfer.getPlaybackRate();
-            if (st.tempo === 1) {
-                wavesurfer.backend.disconnectFilters();
-            } else {
-                if (!soundtouchNode) {
-                    var filter = new window.soundtouch.SimpleFilter(source, st);
-                    soundtouchNode = window.soundtouch.getWebAudioNode(
-                        wavesurfer.backend.ac,
-                        filter
-                    );
-                }
-                wavesurfer.backend.setFilter(soundtouchNode);
-            }
-        })
-        wavesurfer.on('finish', function() {
-            soundtouchNode && soundtouchNode.disconnect();
-        });
-
-        wavesurfer.on('pause', function() {
-            soundtouchNode && soundtouchNode.disconnect();
-        });
     })
 }
 
@@ -475,18 +420,70 @@ function concatBuffer(buffer1, buffer2) {
     return tmp;
 }
 
-function exportBufferToFile() {
-    var blob = encodeWAV(wavesurfer.backend.buffer);
+function exportBufferToFile() {        
+    // Offline context creation
+    wavesurfer.backend.setOfflineAudioContext(wavesurfer.backend.buffer.length / wavesurfer.getPlaybackRate(), wavesurfer.backend.ac.sampleRate);
+    var offlineCtx = wavesurfer.backend.offlineAc;
 
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-    a.href = url;
-    var sound = 'sample__EDIT.wav';
-    a.download = sound;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    // Offline nodes
+    var offlineSource = offlineCtx.createBufferSource();
+    var offlineAnalyser = offlineCtx.createAnalyser();
+    var offlineGain = offlineCtx.createGain();
+    var offlineScriptProcessor = offlineCtx.createScriptProcessor();
+
+    // Offline connections
+    offlineSource.connect(offlineAnalyser);
+    var offlineFilters = createOfflineFilters(offlineCtx);
+    offlineFilters.reduce(function (prev, curr) {
+        prev.connect(curr);
+        return curr;
+        }, offlineAnalyser).connect(offlineGain);
+    offlineGain.connect(offlineCtx.destination);
+    offlineScriptProcessor.connect(offlineCtx.destination);
+
+    // Offline values
+    offlineSource.buffer = wavesurfer.backend.buffer;
+    offlineSource.playbackRate.value = wavesurfer.getPlaybackRate();
+    offlineGain.gain.value = wavesurfer.backend.gainNode.gain.value;
+
+    // Offline start
+    offlineSource.start();
+
+    offlineCtx.startRendering().then((renderedBuffer) => {
+        console.log('Rendered!');
+        var blob = encodeWAV(renderedBuffer);
+
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+        a.href = url;
+        var sound = 'sample__EDIT.wav';
+        a.download = sound;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }).catch((err) => {
+        console.error(err);
+    })
+}
+
+function createOfflineFilters(offlineCtx) {
+    var offlineFilters = [];
+    var filters = wavesurfer.backend.filters;
+
+    if (filters.length === 0) {
+        return offlineFilters;
+    }
+
+    filters.forEach((f) => {
+        var offlineFilter = offlineCtx.createBiquadFilter();
+        offlineFilter.type = f.type;
+        offlineFilter.frequency.value = f.frequency.value;
+        offlineFilter.Q.value = f.Q.value;
+        offlineFilters.push(offlineFilter);
+    });
+
+    return offlineFilters;
 }
 
 function writeUTFBytes(view, offset, string) {
