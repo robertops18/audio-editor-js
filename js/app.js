@@ -449,9 +449,10 @@ function exportBufferToFile() {
     // Offline start
     offlineSource.start();
 
-    offlineCtx.startRendering().then((renderedBuffer) => {
+    offlineCtx.startRendering();
+    offlineCtx.oncomplete = function(ev) {
         console.log('Rendered!');
-        var blob = encodeWAV(renderedBuffer);
+        var blob = encodeWAV(ev.renderedBuffer);
 
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
@@ -462,9 +463,7 @@ function exportBufferToFile() {
         a.download = sound;
         a.click();
         window.URL.revokeObjectURL(url);
-    }).catch((err) => {
-        console.error(err);
-    })
+    }
 }
 
 function createOfflineFilters(offlineCtx) {
