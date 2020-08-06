@@ -113,39 +113,36 @@ function initWavesurferEvents() {
 
 function initKnobListeners() {
     var changeListenerLowpass = function(knob, value, mouseUp) {
-        if (value !== 0) {
-            if (mouseUp) {
-                toUndo('filter', {
-                    filterType: 'lowpass',
-                    frequency: value,
-                    Q: 1,
-                    tooltipTextUndo: 'Undo Lowpass filter',
-                    tooltipTextRedo: 'Redo Lowpass filter'
-                });
-                lowpassFilter.frequency.value = value;
-                appliedFilters.push({filterType: 'lowpass', frequency: lowpassFilter.frequency.value, Q: lowpassFilter.Q.value});
-            } else {
-                lowpassFilter.frequency.value = value;
-            }
+        if (mouseUp) {
+            toUndo('filter', {
+                filterType: 'lowpass',
+                frequency: value,
+                Q: 1,
+                tooltipTextUndo: 'Undo Lowpass filter',
+                tooltipTextRedo: 'Redo Lowpass filter'
+            });
+            lowpassFilter.frequency.value = value;
+            appliedFilters.push({filterType: 'lowpass', frequency: lowpassFilter.frequency.value, Q: lowpassFilter.Q.value});
+        } else {
+            lowpassFilter.frequency.value = value;
         }
+    
     }
     lowpass_knob.addListener(changeListenerLowpass);
 
     var changeListenerHighpass = function(knob, value, mouseUp) {
-        if (value !== 0) {
-            if (mouseUp) {
-                toUndo('filter', {
-                    filterType: 'highpass',
-                    frequency: value,
-                    Q: 1,
-                    tooltipTextUndo: 'Undo Highpass filter',
-                    tooltipTextRedo: 'Redo Highpass filter'
-                });
-                highpassFilter.frequency.value = value;
-                appliedFilters.push({filterType: 'highpass', frequency: highpassFilter.frequency.value, Q: highpassFilter.Q.value});
-            } else {
-                highpassFilter.frequency.value = value;
-            }
+        if (mouseUp) {
+            toUndo('filter', {
+                filterType: 'highpass',
+                frequency: value,
+                Q: 1,
+                tooltipTextUndo: 'Undo Highpass filter',
+                tooltipTextRedo: 'Redo Highpass filter'
+            });
+            highpassFilter.frequency.value = value;
+            appliedFilters.push({filterType: 'highpass', frequency: highpassFilter.frequency.value, Q: highpassFilter.Q.value});
+        } else {
+            highpassFilter.frequency.value = value;
         }
     }
     highpass_knob.addListener(changeListenerHighpass);
