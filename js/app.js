@@ -24,9 +24,9 @@ initQuerySelectors();
 initWavesurferEvents();
 
 //Filters and effects knob
-var lowpass_knob = createKnob('lowpass_knob', 0, 20000, 'Hz', true);
-var bandpass_freq_knob = createKnob('bandpass_freq_knob', 0, 20000, 'Hz', true);
-var bandpass_q_knob = createKnob('bandpass_q_knob', 0, 100, 'Q', true, 1);
+var lowpass_knob = createKnob('lowpass_knob', 0, 20000, 'Hz', true, 20000);
+var bandpass_freq_knob = createKnob('bandpass_freq_knob', 0, 20000, 'Hz', true, 20000);
+var bandpass_q_knob = createKnob('bandpass_q_knob', 0, 100, 'Q', true);
 var highpass_knob = createKnob('highpass_knob', 0, 20000, 'Hz', true);
 
 var amplify_knob = createKnob('amplify_knob', -20, 20, 'dB', true, 0);
@@ -35,6 +35,10 @@ var fade_out_knob = createKnob('fade_out_knob', 0, 10, 'Out (s)', false);
 var rate_knob = createKnob('rate_knob', 0.2, 3, '', true, 1);
 
 initKnobListeners();
+
+var lowpassFilter = applyFilter(lowpassFilter, 'lowpass', lowpass_knob.getValue(), 1);
+var highpassFilter = applyFilter(highpassFilter, 'highpass', highpass_knob.getValue(), 1);
+var bandpassFilter = applyFilter(bandpassFilter, 'bandpass', bandpass_freq_knob.getValue(), bandpass_q_knob.getValue());
 
 // Undo and redo data structures
 var undoArray = []
@@ -108,7 +112,6 @@ function initWavesurferEvents() {
 }
 
 function initKnobListeners() {
-    var lowpassFilter = null, highpassFilter = null, bandpassFilter = null;
     var changeListenerLowpass = function(knob, value, mouseUp) {
         if (value !== 0) {
             if (mouseUp) {
@@ -119,13 +122,10 @@ function initKnobListeners() {
                     tooltipTextUndo: 'Undo Lowpass filter',
                     tooltipTextRedo: 'Redo Lowpass filter'
                 });
-                lowpassFilter = applyFilter(lowpassFilter, 'lowpass', value, 1);
+                lowpassFilter.frequency.value = value;
+                appliedFilters.push({filterType: 'lowpass', frequency: lowpassFilter.frequency.value, Q: lowpassFilter.Q.value});
             } else {
-                if (lowpassFilter) {
-                    lowpassFilter.frequency.value = value;
-                } else {
-                    lowpassFilter = applyFilter(lowpassFilter, 'lowpass', value, 1, true);
-                }
+                lowpassFilter.frequency.value = value;
             }
         }
     }
@@ -141,57 +141,52 @@ function initKnobListeners() {
                     tooltipTextUndo: 'Undo Highpass filter',
                     tooltipTextRedo: 'Redo Highpass filter'
                 });
-                highpassFilter = applyFilter(highpassFilter, 'highpass', value, 1);
+                highpassFilter.frequency.value = value;
+                appliedFilters.push({filterType: 'highpass', frequency: highpassFilter.frequency.value, Q: highpassFilter.Q.value});
             } else {
-                if (highpassFilter) {
-                    highpassFilter.frequency.value = value;
-                } else {
-                    highpassFilter = applyFilter(highpassFilter, 'highpass', value, 1, true);
-                }
+                highpassFilter.frequency.value = value;
             }
         }
     }
     highpass_knob.addListener(changeListenerHighpass);
 
-    var changeListenerBandpass = function(knob, value, mouseUp) {
-        if (value !== 0) {
+    var changeListenerBandpassFreq = function(knob, value, mouseUp) {
+        if (value > 0 && bandpass_q_knob.getValue() > 0) {
             if (mouseUp) {
                 toUndo('filter', {
                     filterType: 'bandpass',
                     frequency: value,
                     Q: bandpass_q_knob.getValue(),
-                    tooltipTextUndo: 'Undo Bandpass filter Freq',
-                    tooltipTextRedo: 'Redo Bandpass filter Freq'
+                    tooltipTextUndo: 'Undo Bandpass filter',
+                    tooltipTextRedo: 'Redo Bandpass filter'
                 });
-                bandpassFilter = applyFilter(bandpassFilter, 'bandpass', value, bandpass_q_knob.getValue());
+                bandpassFilter.frequency.value = value;
+                bandpassFilter.Q.value = bandpass_q_knob.getValue();
+                appliedFilters.push({filterType: 'bandpass', frequency: bandpassFilter.frequency.value, Q: bandpassFilter.Q.value});
             } else {
-                if (bandpassFilter) {
-                    bandpassFilter.frequency.value = value;
-                } else {
-                    bandpassFilter = applyFilter(bandpassFilter, 'bandpass', value, bandpass_q_knob.getValue(), true);
-                }
+                bandpassFilter.frequency.value = value;
+                bandpassFilter.Q.value = bandpass_q_knob.getValue();
             }
         }
     }
-    bandpass_freq_knob.addListener(changeListenerBandpass);
+    bandpass_freq_knob.addListener(changeListenerBandpassFreq);
 
     var changeListenerBandpassQ = function(knob, value, mouseUp) {
-        if (bandpass_freq_knob.getValue() > 0) {
+        if (bandpass_freq_knob.getValue() > 0 && value > 0) {
             if (mouseUp) {
                 toUndo('filter', {
                     filterType: 'bandpass',
                     frequency: bandpass_freq_knob.getValue(),
                     Q: value,
-                    tooltipTextUndo: 'Undo Bandpass filter Q',
-                    tooltipTextRedo: 'Redo Bandpass filter Q'
+                    tooltipTextUndo: 'Undo Bandpass filter',
+                    tooltipTextRedo: 'Redo Bandpass filter'
                 });
-                bandpassFilter = applyFilter(bandpassFilter, 'bandpass', bandpass_freq_knob.getValue(), value);
+                bandpassFilter.frequency.value = bandpass_freq_knob.getValue();
+                bandpassFilter.Q.value = value;
+                appliedFilters.push({filterType: 'bandpass', frequency: bandpassFilter.frequency.value, Q: bandpassFilter.Q.value});
             } else {
-                if (bandpassFilter) {
-                    bandpassFilter.Q.value = value;
-                } else {
-                    bandpassFilter = applyFilter(bandpassFilter, 'bandpass', bandpass_freq_knob.getValue(), value, true);
-                }
+                bandpassFilter.frequency.value = bandpass_freq_knob.getValue();
+                bandpassFilter.Q.value = value;
             }
         }
     }
@@ -323,15 +318,33 @@ function undo() {
                 break;
             case 'filter': // TODO: Undo functions with filters
                 toRedo('filter', undoAction.action);
-                // 1. Pop filter from array
-                appliedFilters.pop()
-                // 2. Cancel its behaviour or apply previous one
-                if (appliedFilters.length > 0) {
-                    var lastFilter = appliedFilters[appliedFilters.length - 1]
-                    applyFilter(lastFilter.filterType, lastFilter.frequency, lastFilter.Q, true);
-                } else {
-                    cancelFilter()
+                console.log(undoAction);
+                appliedFilters.pop();
+                var sameFilter;
+                appliedFilters.forEach((filter) => {
+                    if (filter.filterType === undoAction.action.filterType) {
+                        sameFilter = filter
+                    }
+                });
+                
+                switch (undoAction.action.filterType) {
+                    case 'lowpass':
+                        lowpassFilter.frequency.value = sameFilter ? sameFilter.frequency : 20000;
+                        lowpass_knob.setValue(sameFilter ? sameFilter.frequency : 20000)
+                        break;
+                    case 'highpass':
+                        highpassFilter.frequency.value = sameFilter ? sameFilter.frequency : 0;
+                        highpass_knob.setValue(sameFilter ? sameFilter.frequency : 0)
+                        break;
+                    case 'bandpass':
+                        bandpassFilter.frequency.value = sameFilter ? sameFilter.frequency : 20000;
+                        bandpassFilter.Q.value = sameFilter ? sameFilter.Q : 0;
+                        bandpass_freq_knob.setValue(sameFilter ? sameFilter.frequency : 20000)
+                        bandpass_q_knob.setValue(sameFilter ? sameFilter.Q : 0)
+                        break;   
                 }
+                
+                
                 break;
         }
     } else {
@@ -357,8 +370,22 @@ function redo() {
                 break;
             case 'filter':
                 toUndo('filter', redoAction.action);
-                // Apply filter
-                applyFilter(redoAction.action.filterType, redoAction.action.frequency, redoAction.action.Q);
+                switch(redoAction.action.filterType) {
+                    case 'lowpass':
+                        lowpassFilter.frequency.value = redoAction.action.frequency
+                        lowpass_knob.setValue(redoAction.action.frequency);
+                        break;
+                    case 'highpass':
+                        highpassFilter.frequency.value = redoAction.action.frequency
+                        highpass_knob.setValue(redoAction.action.frequency);
+                        break;
+                    case 'bandpass':
+                        bandpassFilter.frequency.value = redoAction.action.frequency
+                        bandpassFilter.Q.value = redoAction.action.Q
+                        bandpass_freq_knob.setValue(redoAction.action.frequency);
+                        bandpass_q_knob.setValue(redoAction.action.Q);
+                        break;
+                }
                 break;
         }
     } else {
@@ -738,22 +765,16 @@ function numOfRegions() {
 }
 
 // Filter related functions
-function applyFilter(filter, filterType, frequency, Q, fromCancel = false) {
+function applyFilter(filter, filterType, frequency, Q) {
     if (!filter) {
         filter = wavesurfer.backend.ac.createBiquadFilter();
         filter.type = filterType;
+        filter.frequency.value = frequency;
+        filter.Q.value = Q;
         wavesurfer.backend.setFilter(filter);
-    }
-    filter.frequency.value = frequency;
-    filter.Q.value = Q;
-    
-
-    if (!fromCancel) {
-        appliedFilters.push({
-            filterType: filterType,
-            frequency: frequency,
-            Q: Q
-        });
+    } else {
+        filter.frequency.value = frequency;
+        filter.Q.value = Q;
     }
     return filter;
 }
