@@ -169,7 +169,7 @@ function initKnobListeners() {
     bandpass_freq_knob.addListener(changeListenerBandpassFreq);
 
     var changeListenerBandpassQ = function(knob, value, mouseUp) {
-        if (bandpass_freq_knob.getValue() > 0 && value > 0) {
+        if (bandpass_freq_knob.getValue() != 20000 && value > 0) {
             if (mouseUp) {
                 toUndo('filter', {
                     filterType: 'bandpass',
@@ -185,6 +185,9 @@ function initKnobListeners() {
                 bandpassFilter.frequency.value = bandpass_freq_knob.getValue();
                 bandpassFilter.Q.value = value;
             }
+        }
+        if (value == 0) {
+            bandpassFilter.Q.value = 0;
         }
     }
     bandpass_q_knob.addListener(changeListenerBandpassQ);
