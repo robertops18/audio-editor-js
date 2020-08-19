@@ -14,10 +14,7 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
         <script src="js/pureknob.js" type="text/javascript"></script>
-        <script src="js/bitcrush.js" type="text/javascript"></script>
         <script src="js/smoothfade.js" type="text/javascript"></script>
-        <script src="js/pitchshifter.js" type="text/javascript"></script>
-        <script src="js/soundtouch.js" type="text/javascript"></script>
 
         <script src="js/wavesurfer.js"></script>
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.js"></script>
@@ -40,7 +37,7 @@
             </select>
         </div>
 
-        <!-- controls -->
+        <!-- Action controls -->
         <div class="row pl-3" style="align-items: baseline;">
             <div class="border rounded m-1" id="play_pause">
                     <button class="btn btn-primary freesound-color-btn m-1" onclick="wavesurfer.skipBackward()" data-toggle="tooltip" data-placement="bottom" title="Back 2 seconds">
@@ -227,9 +224,11 @@
             </div>
         </div>
 
+        <!-- Waveform -->
         <div id="waveform"></div>
         <div id="wave-timeline"></div>
 
+        <!-- Filters and effects pannel -->
         <div class="row p-2">
             <div class="border rounded m-1 col-sm" id="filters_pannel">
                 <div class="row">
