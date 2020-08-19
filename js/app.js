@@ -17,6 +17,7 @@ document.body.onkeydown = function(event) {
         keyDown(event);
     }
 };
+
 // Query Selectors
 initQuerySelectors();
 
@@ -193,33 +194,28 @@ function initKnobListeners() {
     bandpass_q_knob.addListener(changeListenerBandpassQ);
 
     var changeListenerAmplify = function(knob, value, mouseUp) {
-        if (mouseUp) {
-            //TODO: Undo and redo amplify
-        }
         amplify(value);
     }
     amplify_knob.addListener(changeListenerAmplify);
 
     var changeListenerFadeIn = function(knob, value, mouseUp) {
         if (mouseUp) {
-            //TODO: Undo and redo fadein
+            toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Fade in', tooltipTextRedo: 'Redo Fade in'});
+            fadeIn(value);
         }
-        fadeIn(value);
     }
     fade_in_knob.addListener(changeListenerFadeIn);
 
     var changeListenerFadeOut = function(knob, value, mouseUp) {
         if (mouseUp) {
             //TODO: Undo and redo fadeout
+            toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Fade out', tooltipTextRedo: 'Redo Fade out'});
+            fadeOut(value);
         }
-        fadeOut(value);
     }
     fade_out_knob.addListener(changeListenerFadeOut);
 
     var changeListenerPlaybackRate = function(knob, value, mouseUp) {
-        if (mouseUp) {
-            //TODO: Undo and redo playback rate
-        }
         changePlaybackRate(value);
     }
     rate_knob.addListener(changeListenerPlaybackRate);
@@ -312,13 +308,11 @@ function undo() {
             case 'buffer':
                 toRedo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: undoAction.action.tooltipTextUndo, tooltipTextRedo: undoAction.action.tooltipTextRedo});
                 var previousBuffer = undoAction.action.buffer;
-                console.log(previousBuffer)
                 wavesurfer.empty()
                 wavesurfer.loadDecodedBuffer(previousBuffer);
                 break;
             case 'filter': // TODO: Undo functions with filters
                 toRedo('filter', undoAction.action);
-                console.log(undoAction);
                 appliedFilters.pop();
                 var sameFilter;
                 appliedFilters.forEach((filter) => {
@@ -464,7 +458,7 @@ function exportBufferToFile() {
     offlineFilters.reduce(function (prev, curr) {
         prev.connect(curr);
         return curr;
-        }, offlineAnalyser).connect(offlineGain);
+    }, offlineAnalyser).connect(offlineGain);
     offlineGain.connect(offlineCtx.destination);
     offlineScriptProcessor.connect(offlineCtx.destination);
 
@@ -569,18 +563,65 @@ function reverse() {
 
 // Gain related functions
 
-function fadeIn(duration) { //TODO
-    var gainNode = wavesurfer.backend.gainNode;
-    gainNode.gain.cancelScheduledValues( wavesurfer.backend.ac.currentTime );
-    gainNode.gain.setValueAtTime( 0.00001, wavesurfer.backend.ac.currentTime );
-    gainNode.gain.exponentialRampToValueAtTime( 1.0, wavesurfer.backend.ac.currentTime + duration );
+function fadeIn(duration) {
+    var originalBuffer = wavesurfer.backend.buffer;
+    wavesurfer.backend.setOfflineAudioContext(wavesurfer.backend.buffer.length / wavesurfer.getPlaybackRate(), wavesurfer.backend.ac.sampleRate);
+    var offline_ctx = wavesurfer.backend.offlineAc;
+    var source = offline_ctx.createBufferSource();
+    source.buffer = originalBuffer;
+
+    var gain = offline_ctx.createGain();
+    gain.gain.setValueAtTime(0, offline_ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(1, offline_ctx.currentTime + duration);
+    gain.connect (offline_ctx.destination);	
+    source.connect (gain);
+
+    source.start();
+
+    offline_ctx.startRendering().then((renderedBuffer) => {
+        wavesurfer.loadDecodedBuffer(renderedBuffer);
+        wavesurfer.stop();
+        source.disconnect();
+    }).catch((err) => {
+        console.error(err);
+    })
 }
 
 function fadeOut(duration) {
-    var gainNode = wavesurfer.backend.gainNode;
-    var sm = getSmoothFade(wavesurfer.backend.ac, gainNode, {type: 'exponential'});
-    sm.fadeOut();
+    var originalBuffer = wavesurfer.backend.buffer;
+
+    var fadeOutBuffer = createBuffer(originalBuffer, originalBuffer.duration - wavesurfer.getCurrentTime());
+    copyBuffer(wavesurfer.backend.buffer, wavesurfer.getCurrentTime(), originalBuffer.duration, fadeOutBuffer, 0);
+    if (wavesurfer.getCurrentTime() != 0) {
+        var firstBuffer = createBuffer(originalBuffer, wavesurfer.getCurrentTime());
+        copyBuffer(wavesurfer.backend.buffer, 0, wavesurfer.getCurrentTime(), firstBuffer, 0);
+    }
+
+    wavesurfer.backend.setOfflineAudioContext(fadeOutBuffer.length / wavesurfer.getPlaybackRate(), wavesurfer.backend.ac.sampleRate);
+    var offline_ctx = wavesurfer.backend.offlineAc;
+    var source = offline_ctx.createBufferSource();
+    source.buffer = fadeOutBuffer;
+
+    var gain = offline_ctx.createGain();
+    gain.gain.setValueAtTime(1, offline_ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, offline_ctx.currentTime + duration/1);
+    gain.connect(offline_ctx.destination);			
+    source.connect(gain);
+                        
+    source.start();
+
+
+    offline_ctx.startRendering().then((renderedBuffer) => {
+        var finalBuffer = wavesurfer.getCurrentTime() == 0 ? renderedBuffer : concatBuffer(firstBuffer, renderedBuffer);
+        wavesurfer.loadDecodedBuffer(finalBuffer);
+        wavesurfer.stop();
+        //source.disconnect();
+    }).catch((err) => {
+        console.error(err);
+    })
+    
 }
+
 
 function amplify(value) {
     wavesurfer.backend.gainNode.gain.value = Math.pow(10, (value / 20));
