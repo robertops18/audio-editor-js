@@ -31,8 +31,6 @@ var bandpass_q_knob = createKnob('bandpass_q_knob', 0, 100, 'Q', true);
 var highpass_knob = createKnob('highpass_knob', 0, 20000, 'Hz', true);
 
 var amplify_knob = createKnob('amplify_knob', -20, 20, 'dB', true, 0);
-var fade_in_knob = createKnob('fade_in_knob', 0, 10, 'In (s)', false);
-var fade_out_knob = createKnob('fade_out_knob', 0, 10, 'Out (s)', false);
 var rate_knob = createKnob('rate_knob', 0.2, 3, '', true, 1);
 
 initKnobListeners();
@@ -90,6 +88,14 @@ function initQuerySelectors() {
     }
     document.querySelector('#zoom_selected_btn').onclick = function () {
         zoomToRegion();
+    }
+    document.querySelector('#fade_in_btn').onclick = function () {
+        toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Fade in', tooltipTextRedo: 'Redo Fade in'});
+        fadeIn();
+    }
+    document.querySelector('#fade_out_btn').onclick = function () {
+        toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Fade out', tooltipTextRedo: 'Redo Fade out'});
+        fadeOut();
     }
 }
 
@@ -197,23 +203,6 @@ function initKnobListeners() {
         amplify(value);
     }
     amplify_knob.addListener(changeListenerAmplify);
-
-    var changeListenerFadeIn = function(knob, value, mouseUp) {
-        if (mouseUp) {
-            toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Fade in', tooltipTextRedo: 'Redo Fade in'});
-            fadeIn(value);
-        }
-    }
-    fade_in_knob.addListener(changeListenerFadeIn);
-
-    var changeListenerFadeOut = function(knob, value, mouseUp) {
-        if (mouseUp) {
-            //TODO: Undo and redo fadeout
-            toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Fade out', tooltipTextRedo: 'Redo Fade out'});
-            fadeOut(value);
-        }
-    }
-    fade_out_knob.addListener(changeListenerFadeOut);
 
     var changeListenerPlaybackRate = function(knob, value, mouseUp) {
         changePlaybackRate(value);
@@ -563,7 +552,10 @@ function reverse() {
 
 // Gain related functions
 
-function fadeIn(duration) {
+function fadeIn() {
+    var region = getRegion();
+    var duration = region.end;
+
     var originalBuffer = wavesurfer.backend.buffer;
     wavesurfer.backend.setOfflineAudioContext(wavesurfer.backend.buffer.length / wavesurfer.getPlaybackRate(), wavesurfer.backend.ac.sampleRate);
     var offline_ctx = wavesurfer.backend.offlineAc;
@@ -587,15 +579,16 @@ function fadeIn(duration) {
     })
 }
 
-function fadeOut(duration) {
+function fadeOut() {
     var originalBuffer = wavesurfer.backend.buffer;
+    var region = getRegion();
+    var duration = originalBuffer.duration - region.start;
 
-    var fadeOutBuffer = createBuffer(originalBuffer, originalBuffer.duration - wavesurfer.getCurrentTime());
-    copyBuffer(wavesurfer.backend.buffer, wavesurfer.getCurrentTime(), originalBuffer.duration, fadeOutBuffer, 0);
-    if (wavesurfer.getCurrentTime() != 0) {
-        var firstBuffer = createBuffer(originalBuffer, wavesurfer.getCurrentTime());
-        copyBuffer(wavesurfer.backend.buffer, 0, wavesurfer.getCurrentTime(), firstBuffer, 0);
-    }
+    var fadeOutBuffer = createBuffer(originalBuffer, originalBuffer.duration - region.start);
+    copyBuffer(wavesurfer.backend.buffer, region.start, originalBuffer.duration, fadeOutBuffer, 0);
+
+    var firstBuffer = createBuffer(originalBuffer, region.start);
+    copyBuffer(wavesurfer.backend.buffer, 0, region.start, firstBuffer, 0);
 
     wavesurfer.backend.setOfflineAudioContext(fadeOutBuffer.length / wavesurfer.getPlaybackRate(), wavesurfer.backend.ac.sampleRate);
     var offline_ctx = wavesurfer.backend.offlineAc;
@@ -612,7 +605,7 @@ function fadeOut(duration) {
 
 
     offline_ctx.startRendering().then((renderedBuffer) => {
-        var finalBuffer = wavesurfer.getCurrentTime() == 0 ? renderedBuffer : concatBuffer(firstBuffer, renderedBuffer);
+        var finalBuffer = concatBuffer(firstBuffer, renderedBuffer);
         wavesurfer.loadDecodedBuffer(finalBuffer);
         wavesurfer.stop();
         //source.disconnect();
@@ -788,11 +781,15 @@ function setDisabledWhenNoRegion(status) {
     document.querySelector('#empty_region').disabled = status;
     document.querySelector('#get_selection_btn').disabled = status;
     document.querySelector('#zoom_selected_btn').disabled = status;
+    document.querySelector('#fade_in_btn').disabled = status;
+    document.querySelector('#fade_out_btn').disabled = status;
 
     document.querySelector('#delete_region').style.pointerEvents = status === true ? 'none' : 'auto';
     document.querySelector('#empty_region').style.pointerEvents = status === true ? 'none' : 'auto';
     document.querySelector('#get_selection_btn').style.pointerEvents = status === true ? 'none' : 'auto';
     document.querySelector('#zoom_selected_btn').style.pointerEvents = status === true ? 'none' : 'auto';
+    document.querySelector('#fade_in_btn').style.pointerEvents = status === true ? 'none' : 'auto';
+    document.querySelector('#fade_out_btn').style.pointerEvents = status === true ? 'none' : 'auto';
 }
 
 function getRegion() {
