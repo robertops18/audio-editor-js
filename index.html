@@ -115,8 +115,9 @@
                     </button>
                 </div>
             </div>
+            
             <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
+                    <div class="modal-dialog mw-100 w-75" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="helpModalLabel">Freesound Editor Help</h5>
@@ -124,99 +125,82 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
+                            
                             <div class="modal-body">
-                                <p>Welcome to the Freesound online audio editor! These are the available operations:</p>
-                                <ul>
-                                    <li>
-                                        General operations
-                                        <ul>
-                                            <li>
-                                                Play and pause (Spacebar)
-                                            </li>
-                                            <li>
-                                                Skip backward (Left arrow) and forward (Right arrow)
-                                            </li>
-                                            <li>
-                                                Undo (Ctrl or Cmd + Z) and redo (Ctrl or Cmd + Shift + Z)
-                                            </li>
-                                            <li>
-                                                Download edited sample
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        Waveform related actions
-                                        <ul>
-                                            <li>
-                                                Zoom to selected region
-                                            </li>
-                                            <li>
-                                                Delete selected region (Backspace)
-                                            </li>
-                                            <li>
-                                                Clear selected region
-                                            </li>
-                                            <li>
-                                                Get original sample
-                                            </li>
-                                            <li>
-                                                Reset filters
-                                            </li>
-                                            <li>
-                                                Reverse sample
-                                            </li>
-                                            <li>
-                                                Zoom in and out
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        Filters
-                                        <ul>
-                                            <li>
-                                                Lowpass filter
-                                            </li>
-                                            <li>
-                                                Highpass filter
-                                            </li>
-                                            <li>
-                                                Bandpass filter
-                                            </li>
-                                            <li>
-                                                Lowshelf filter
-                                            </li>
-                                            <li>
-                                                Highshelf filter
-                                            </li>
-                                            <li>
-                                                Peaking filter
-                                            </li>
-                                            <li>
-                                                Notch filter
-                                            </li>
-                                            <li>
-                                                Allpass filter
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        Effects
-                                        <ul>
-                                            <li>
-                                                Amplify waveform
-                                            </li>
-                                            <li>
-                                                Fade in and out (select the point to start and the duration of the effect and then apply)
-                                            </li>
-                                            <li>
-                                                Bitcrush effect
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="false">
+                                    <ul class="carousel-indicators" >
+                                      <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active" style="background-color: #AB4646 ;"></li>
+                                      <li data-target="#carouselExampleIndicators" data-slide-to="1" style="background-color: #AB4646 ;"></li>
+                                      <li data-target="#carouselExampleIndicators" data-slide-to="2" style="background-color: #AB4646 ;"></li>
+                                      <li data-target="#carouselExampleIndicators" data-slide-to="3" style="background-color: #AB4646 ;"></li>
+                                      <li data-target="#carouselExampleIndicators" data-slide-to="4" style="background-color: #AB4646 ;"></li>
+                                      <li data-target="#carouselExampleIndicators" data-slide-to="5" style="background-color: #AB4646 ;"></li>
+                                      <li data-target="#carouselExampleIndicators" data-slide-to="6" style="background-color: #AB4646 ;"></li>
+                                    </ul>
+                                    <div class="carousel-inner" style="height: 400px; text-align: center;">
+                                      <div class="carousel-item active">
+                                        <p class="help-modal-text">Welcome to the Freesound online audio editor!</p>
+                                        <p>Here you will find an explanation of the available operations (and shortcuts)</p>
+                                        <img src="img/freesound.jpg" class="mt-2" alt="freesound">
+                                      </div>
+                                      <div class="carousel-item">
+                                        <p class="help-modal-text pb-5">Playback</p>
+                                        <p>Play and pause (Spacebar)</p>
+                                        <p>Move backwards 2 seconds (Left arrow)</p>
+                                        <p>Move forwards 2 seconds (Right arrow)</p>
+                                        <p>Stop playback and go to the start</p>
+                                        <img src="img/playback.png" alt="playback controls">
+                                      </div>
+                                      <div class="carousel-item">
+                                        <p class="help-modal-text pb-5">Undo/Redo, Clear and Delete region</p>
+                                        <p>Undo action (Cmd/Ctrl + Z)</p>
+                                        <p>Redo action (Cmd/Ctrl + Shift + Z)</p>
+                                        <p>Clear region</p>
+                                        <p>Delte region (Backspace)</p>
+                                        <img src="img/undoredo.png" alt="undo/redo controls">
+                                      </div>
+                                      <div class="carousel-item">
+                                        <p class="help-modal-text pb-5">Zoom</p>
+                                        <p>Zoom in (+)</p>
+                                        <p>Zoom out (-)</p>
+                                        <p>Zoom to selected region</p>
+                                        <img src="img/zoom.png" alt="zoom controls">
+                                      </div>
+                                      <div class="carousel-item">
+                                        <p class="help-modal-text pb-4">More actions</p>
+                                        <p>Get selected region</p>
+                                        <p>Get original sample</p>
+                                        <p>Reverse</p>
+                                        <p>Download edited sample</p>
+                                        <p>Help</p>
+                                        <img src="img/moreactions.png" alt="more actions">
+                                      </div>
+                                      <div class="carousel-item">
+                                        <p class="help-modal-text pb-2">EQ</p>
+                                        <p>Lowpass filter</p>
+                                        <p>Bandpass filter</p>
+                                        <p>Highpass filter</p>
+                                        <img src="img/eq.png" alt="EQ controls">
+                                      </div>
+                                      <div class="carousel-item">
+                                        <p class="help-modal-text pb-2">Effects</p>
+                                        <p>Gain control</p>
+                                        <p>Fade in and out</p>
+                                        <p>Playback rate control</p>
+                                        <img src="img/effects.png" alt="effects controls">
+                                      </div>
+                                    </div>
+
+                                    <a class="carousel-control left carousel-control-prev" href="#carouselExampleIndicators" data-slide="prev"></a>
+                                    <i class="fa fa-angle-left" style="float: left;position: absolute;left: 0;top: 50%; color:#AB4646"></i>
+                                    
+                                    <a class="carousel-control right carousel-control-next" href="#carouselExampleIndicators" data-slide="next" style="text-align:right"></a>
+                                    <i class="fa fa-angle-right" style="float: right;position: absolute;right: 0;top: 50%; color:#AB4646"></i>
+                                  </div>
                             </div>
+                        
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-dismiss="modal">Start editing!</button>
+                                <button type="button" class="btn btn-primary freesound-color-btn" data-dismiss="modal">Start editing!</button>
                             </div>
                         </div>
                     </div>
