@@ -237,7 +237,7 @@ function createWavesurfer(song) {
         ]
     });
     wavesurfer.enableDragSelection({drag:false, color: 'rgba(256, 256, 256, 0.3)'});
-    wavesurfer.load(song);
+   //wavesurfer.load(song);
 
     return wavesurfer;
 }
@@ -246,10 +246,18 @@ function playPause() {
     wavesurfer.playPause();
 }
 
-function loadSong() {
-    var sample = document.getElementById("sampleSelect").value;
-    wavesurfer.empty();
-    wavesurfer.load(sample);
+async function loadSong() {
+    const $audioFileInput = document.getElementById('inputFile');
+    const file = $audioFileInput.files[0];
+
+    if (file !== undefined) {
+        const arrayBuffer = await file.arrayBuffer();
+        new AudioContext().decodeAudioData(arrayBuffer, function(buffer) {
+            document.getElementById('inputFileLabel').innerHTML = file.name;
+            wavesurfer.empty();
+            wavesurfer.loadDecodedBuffer(buffer);
+        })
+    }
 }
 
 function zoomIn(value = null) {

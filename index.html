@@ -25,19 +25,20 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     </head>
 
-    <body>
-        
-        <div id="select_sample">
-            <p>Select a sample to start editing!</p>
-            <select id="sampleSelect" onchange="loadSong()">
-                <option value="https://freesound.org/data/previews/415/415072_2155630-lq.mp3">phenomenom.wav</option>
-                <option value="https://freesound.org/data/previews/414/414825_1083532-lq.mp3">church bell</option>
-                <option value="https://freesound.org/data/previews/414/414757_8161277-lq.mp3">2ed60bpm_8.wav</option>
-            </select>
+    <body style="width: 90%; margin-left: auto; margin-right: auto">
+
+        <div id="select_sample" class="border rounded">
+            <p>Upload a sample to start editing! </p>
+            <div class="input-group mb-3 px-5">
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="inputFile" aria-describedby="inputGroupFileAddon01" accept="audio/*" onchange="loadSong()">
+                <label class="custom-file-label" for="inputGroupFile01" id="inputFileLabel">Choose file</label>
+              </div>
+            </div>
         </div>
 
         <!-- Action controls -->
-        <div class="row pl-3" style="align-items: baseline;">
+        <div class="row pl-3 justify-content-center" style="align-items: baseline; margin-bottom: 5px">
             <div class="border rounded m-1" id="play_pause">
                     <button class="btn btn-primary freesound-color-btn m-1" onclick="wavesurfer.skipBackward()" data-toggle="tooltip" data-placement="bottom" title="Back 2 seconds">
                         <i class="fa fa-step-backward"></i>
@@ -156,7 +157,7 @@
                                         <p>Undo action (Cmd/Ctrl + Z)</p>
                                         <p>Redo action (Cmd/Ctrl + Shift + Z)</p>
                                         <p>Clear region</p>
-                                        <p>Delte region (Backspace)</p>
+                                        <p>Delete region (Backspace)</p>
                                         <img src="img/undoredo.png" alt="undo/redo controls">
                                       </div>
                                       <div class="carousel-item">
